@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta 字符集=>
+<meta 名称="viewport" 内容="width=device-width, initial-scale=1.0">
+<title>幸运轮盘</title>
+&lt;b&gt;&lt;script src=&quot;https:&#x2F;&#x2F;cdn.jsdelivr.net&#x2F;npm&#x2F;ethers@6.7.0&#x2F;dist&#x2F;ethers.umd.min.js&quot;&gt;&lt;&#x2F;script&gt;&lt;&#x2F;b&gt;
+#x2F;&#x2F;cdn.tailwindcss.com&quot;&gt;&lt;&#x2F;script&gt;&lt;&#x2F;b&gt;
+
+body{background:#111827;color:#fff}
+2937;圆角:16p；内边距:
+.wheel{
+宽度：280p×；边框半径：999p×；定位：相对；外边距：0 自动;
+背景:圆锥渐变(#ef4444 0%16.66%,#1f2937 16.66%33.32%,#0ea5e9 33.32%49.98%,#10b981 49.98%66.64%,#8b5cf6 66.64%83.3%,#f59e0b 83.3%100%)
+
+.wheel::after{
+内容:”;宽度:22px;高度:22px;背景:#fff;边框半径:999px;
+position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)
+}
+.旋转{动画：旋转3s 缓动后退}
+@keyframes spin{0%{变换：旋转(0度)}100%{度)}}
+</样式>
+</head>
+<正文 class="p-4 max-w-4xl mx-auto">
+
+<div class=“flex gap-3 mb-4>
+<按钮 class="px-4 py-2 bg-gray-700 rounded-lg" onclick="location.href='huzijicai.html'">数字竞猜</button>
+<按钮 class="px-4 py-2 bg-blue-600 rounded-lg" 点击事件="location.链接地址='xinyunlunpan.html'">幸运轮盘</button>
+</div>
+
+<h1 class="text-xl font-bold mb-4">幸运轮盘</h1>
+
+<div class="card mb-4">
+<button id="connect" class="w-full py-3 bg-blue-500 rounded-lg mb-2">连接钱包</button>
+<div id="addr" class="text-center text-sm text-gray-400">未连接</div>
+</div>
+
+<div class="grid grid-cols-3 gap-2 text-center mb-4">
+<div><div class="text-gray-400">BNB</div><div id="bnb">0.0000</div></div>
+<div><div class="text-gray-400">USDT</div><div id="usdt">0.0000</div></div>
+<div><div class="text-gray-400">哈希</div><div id="hash">0.0000</div></div>
+</div>
+
+<div class="card mb-4 flex justify-center">
+<div id="wheel" class="wheel"></div>
+</div>
+
+<div class="text-xs text-center text-gray-400 mb-3">
+谢谢未中奖 | 本金返还90% | 1.2倍 | 1.5倍 | 2倍 | 5倍大奖
+</div>
+
+<div class="card">
+<input id="amt" class="w-full p-3 bg-gray-800 rounded-lg mb-2" value="0.01">
+<select id="token" class="w-full p-3 bg-gray-800 rounded-lg mb-2">
+<option value="BNB">BNB</option>
+<option value="USDT">USDT</option>
+<option value="HASH">HASH</option>
+</select>
+<button id="旋转" class="w-full py-3 bg-green-500 rounded-lg">开始旋转</button>
+</div>
+
+<script>
+let provider, signer, user;
+const prizes = ["谢谢未中奖","本金返还90%","1.2倍奖励","1.5倍奖励","2倍奖励","5倍大奖"];
+
+async function connect(){
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  signer = await provider.getSigner();
+  user = await signer.getAddress();
+  document.getElementById("addr").innerText = user.slice(0,6)+"..."+user.slice(-4);
+}
+
+document.getElementById("connect").onclick = connect;
+document.getElementById("spin").onclick = ()=>{
+  if(!user)return alert("请连接钱包");
+  const w = document.getElementById("wheel");
+  w.classList.add("spin");
+  setTimeout(()=>{
+    alert("开奖结果："+prizes[Math.floor(Math.random()*6)]);
+    w.classList.remove("spin");
+  },3000);
+};
+</script>
+</body>
+</html>
