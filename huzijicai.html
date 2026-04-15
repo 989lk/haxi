@@ -8,25 +8,25 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body{background:#111827;color:#fff}
-.card{background:#1f2937;border-radius:16px;padding:16px}
+body{背景:#111827;颜色:#fff}
+.卡片{背景:#1f2937;border-radius:16像素;padding:16像素}
 </style>
 </head>
 <body class="p-4 max-w-4xl mx-auto">
 
 <div class="flex gap-3 mb-4">
 <button class="px-4 py-2 bg-blue-600 rounded-lg" onclick="location.href='huzijicai.html'">数字竞猜</button>
-<button class="px-4 py-2 bg-gray-700 rounded-lg" onclick="location.href='xinyunlunpan.html'">幸运轮盘</button>
+<button class="px-4 py-2 bg-gray-700 rounded-lg" onclick="位置.href='xinyunlunpan.html'">幸运轮盘</button>
 </div>
 
 <h1 class="text-xl font-bold mb-4">数字竞猜</h1>
 
 <div class="card mb-4">
 <button id="connect" class="w-full py-3 bg-blue-500 rounded-lg mb-2">连接钱包</button>
-<div id="addr" class="text-center text-sm text-gray-400">未连接</div>
+<div id="addr" class="文本居中 文字小号 灰色-400">未连接</div>
 </div>
 
-<div class="grid grid-cols-3 gap-2 text-center mb-4">
+
 <div><div class="text-gray-400">BNB</div><div id="bnb">0.0000</div></div>
 <div><div class="text-gray-400">USDT</div><div id="usdt">0.0000</div></div>
 <div><div class="text-gray-400">HASH</div><div id="hash">0.0000</div></div>
