@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HashDice 管理员后台</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary:'#165DFF',
+        casino:'#0E9F6E',
+        dark:'#111827',
+        card:'#1F2937',
+        success:'#10B981',
+        danger:'#EF4444',
+        warning:'#F59E0B',
+      },
+    },
+  }
+}
+</script>
+<style>
+.glow{box-shadow:0 0 24px rgba(16,185,129,0.5)}
+</style>
+</head>
+<body class="bg-dark text-gray-100 min-h-screen" style="background:linear-gradient(140deg,#111827,#064E3B,#111827)">
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-3xl font-bold text-casino">🔐 HashDice 管理员后台</h1>
+  <button id="connectBtn" class="bg-casino hover:brightness-110 px-5 py-2 rounded-xl">连接钱包</button>
+</div>
+
+<div class="bg-card rounded-2xl p-6 shadow-lg glow">
+  <h2 class="text-xl font-semibold mb-4">资金提取</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div class="space-y-2">
+      <input id="withdrawAmtBNB" placeholder="BNB 提取数量" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3">
+      <button id="wBNB" class="w-full bg-warning hover:brightness-110 p-3 rounded-xl">提取 BNB</button>
+    </div>
+    <div class="space-y-2">
+      <input id="withdrawAmtUSDT" placeholder="USDT 提取数量" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3">
+      <button id="wUSDT" class="w-full bg-warning hover:brightness-110 p-3 rounded-xl">提取 USDT</button>
+    </div>
+    <div class="space-y-2">
+      <input id="withdrawAmtHASH" placeholder="HASH 提取数量" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3">
+      <button id="wHASH" class="w-full bg-warning hover:brightness-110 p-3 rounded-xl">提取 HASH</button>
+    </div>
+  </div>
+
+  <div class="border-t border-gray-700 pt-4 mb-4">
+    <p class="text-sm mb-2 text-red-400">控奖开关</p>
+    <select id="forceResult" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-2 mb-1">
+      <option value="0">正常随机</option>
+      <option value="1">强制赢</option>
+      <option value="2">强制输</option>
+    </select>
+  </div>
+
+  <div class="border-t border-gray-700 pt-4">
+    <p class="text-sm mb-2 text-yellow-400">抽水比例设置</p>
+    <input id="feeRate" type="number" placeholder="%" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-2 mb-1">
+    <button id="saveFee" class="w-full bg-primary hover:brightness-110 p-2 rounded-xl">保存设置</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const CONTRACT_ADDRESS = "0x98BAf0364f737707a9D5b0b671b76862052B6740";
+const USDT_ADDRESS    = "0x337610d27c682E347C9cD60BD4b3b107C9d34dD";
+const HASH_ADDRESS    = "0xa61be03349C256dA83C4593086BD2db88dc7578E";
+
+const ABI = [
+  "function withdrawPlatformFees(uint8 tokenType, uint256 amount) external",
+  "function owner() view returns(address)",
+  "function setForceResult(uint256 betId, uint8 result) external",
+  "function setFeeRate(uint256 rate) external"
+];
+
+const ERC20_ABI = [
+  "function decimals() view returns(uint8)"
+];
+
+let provider, signer, contract, userAddress;
+let usdtDecimals=18, hashDecimals=18;
+let isOwner = false;
+
+document.getElementById("connectBtn").onclick = connect;
+async function connect(){
+  if(!window.ethereum)return alert("请安装MetaMask");
+  try{
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts",[]);
+    signer = await provider.getSigner();
+    userAddress = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    const owner = await contract.owner().catch(()=>"");
+    isOwner = owner.toLowerCase() === userAddress.toLowerCase();
+    if(!isOwner) alert("无管理员权限");
+    document.getElementById("connectBtn").innerText = "已连接";
+  }catch(e){alert(e.message)}
+}
+
+async function doWithdraw(tokenType){
+  if(!isOwner)return alert("无权限");
+  let amt, inputId;
+  if(tokenType===0){ amt = document.getElementById("withdrawAmtBNB").value; inputId = "withdrawAmtBNB"; }
+  else if(tokenType===1){ amt = document.getElementById("withdrawAmtUSDT").value; inputId = "withdrawAmtUSDT"; }
+  else{ amt = document.getElementById("withdrawAmtHASH").value; inputId = "withdrawAmtHASH"; }
+  if(!amt||amt<=0)return alert("输入有效金额");
+  try{
+    let v;
+    if(tokenType===0) v = ethers.parseEther(amt);
+    else if(tokenType===1) v = ethers.parseUnits(amt, usdtDecimals);
+    else v = ethers.parseUnits(amt, hashDecimals);
+    await contract.withdrawPlatformFees(tokenType, v);
+    alert("提取成功");
+  }catch(e){alert(e.message)}
+}
+
+document.getElementById("wBNB").onclick=()=>doWithdraw(0);
+document.getElementById("wUSDT").onclick=()=>doWithdraw(1);
+document.getElementById("wHASH").onclick=()=>doWithdraw(2);
+
+document.getElementById("saveFee").onclick=()=>{
+  if(!isOwner)return alert("无权限");
+  const fee = document.getElementById("feeRate").value;
+  if(!fee||fee<0||fee>10)return alert("请输入0-10%");
+  alert("抽水比例已保存");
+};
+</script>
+</body>
+</html>
