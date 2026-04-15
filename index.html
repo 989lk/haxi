@@ -2,41 +2,41 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HashDice 赌场</title>
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-<script>
+<meta name="viewport" content=“宽度=device-width, initial-scale=1.0”/>
+<>HashDice 赌场</标题>
+&lt;b&gt;&lt;脚本 src=https:&#x2F;&#x2F;cdn.jsdelivr.net&#x2F;npm&#x2F;ethers@6.7.0&#x2F;dist&#x2F;ethers.umd.min.js&quot;&gt;&lt;&#x2F;脚本&gt;&lt;&#x2F;b&gt;
+b&gt;&lt;脚本 src=&quot;https:&#x2F;&#x2F;cdn.tailwindcss.com&quot;&gt;&lt;&#x2F;脚本&gt;&lt;&#x2F;b&gt;
+<链接
+<脚本>
 tailwind.config = {
   theme: {
     extend: {
-      colors: {
-        primary:'#165DFF',
-        casino:'#0E9F6E',
-        dark:'#111827',
-        card:'#1F2937',
-        success:'#10B981',
-        danger:'#EF4444',
-        warning:'#F59E0B',
+颜色: {
+主色:'#165DFF',
+赌场绿:'#0E9F6E',
+深色:'#111827',
+卡片色:'#1F2937',
+成功绿:'#10B981',
+危险红:'#EF4444',
+警告黄:'#F59E0B',
       },
     },
   }
 }
 </script>
 <style>
-@keyframes diceShake {0%{transform:rotate(0deg)}25%{transform:rotate(12deg)}50%{transform:rotate(-12deg)}75%{transform:rotate(6deg)}100%{transform:rotate(0deg)}}
-@keyframes winFlash {0%{background:#10B981}50%{background:#16A34A}100%{background:#10B981}}
-@keyframes slotRoll {0%{transform:translateY(0)}100%{transform:translateY(-300px)}}
+@keyframes diceShake {0%{变换:旋转(0度)}25%{变换:旋转(12度)}50%{变换:旋转(-12度)}75%{变换:旋转(6度)}100%{变换:旋转(0度)}}
+@keyframes winFlash {0%{背景:#10B981}50%{背景#16A34A}100%{背景:#10B981}}
+@keyframes slotRoll {0%{变换:translateY(0)}100%{变换:translateY(-300px)}}
 @keyframes numberCount {from{opacity:0.2}to{opacity:1}}
 .dice-shake{animation:diceShake 0.6s ease}
 .win-flash{animation:winFlash 0.8s infinite alternate}
 .slot-roll{animation:slotRoll 1s ease-in-out}
 .number-animate{animation:numberCount 0.5s ease}
 .glow{box-shadow:0 0 24px rgba(16,185,129,0.5)}
-</style>
+</样式>
 </head>
-<body class="bg-dark text-gray-100 min-h-screen" style="background:linear-gradient(140deg,#111827,#064E3B,#111827)">
+<body class="bg-dark text-gray-100 min-h-screen" style="background:linear-gradient(140度,#111827,#064E3B,#111827)">
 <div class="max-w-6xl mx-auto px-4 py-8">
 
 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
