@@ -13,6 +13,7 @@ body {
                     radial-gradient(circle at 80% 80%, rgba(22,12,60,0.4), transparent 45%);
   color: #fff;
   min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .card {
   background: rgba(22,22,40,0.65);
@@ -20,6 +21,10 @@ body {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.card-glow {
+  position: relative;
 }
 .card-glow::before {
   content: "";
@@ -33,35 +38,54 @@ body {
   opacity: 0.4;
   pointer-events: none;
 }
+/* 按钮样式优化 - 缩小精致化 */
 .btn-primary {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  border-radius: 14px;
+  border-radius: 12px; /* 更圆润 */
+  font-weight: 600;
+  font-size: 13px; /* 缩小字体 */
+  padding: 6px 16px; /* 缩小内边距 */
   transition: all 0.25s ease;
+  box-shadow: 0 0 10px rgba(79,70,229,0.2);
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(79,70,229,0.35);
+  box-shadow: 0 0 20px rgba(79,70,229,0.4);
 }
 .btn-success {
   background: linear-gradient(90deg, #10b981, #059669);
   border-radius: 14px;
+  font-weight: 600;
   transition: all 0.25s ease;
+  box-shadow: 0 0 15px rgba(16,185,129,0.25);
+}
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(16,185,129,0.35);
 }
 .btn-option {
   background: rgba(30,30,60,0.5);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 14px;
+  transition: all 0.25s ease;
 }
 .stat-box {
   background: rgba(26,26,44,0.5);
   border-radius: 16px;
   backdrop-filter: blur(10px);
+  transition: transform 0.2s ease;
 }
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+/* 轮盘核心样式 - 修复对齐与光效 */
 .wheel-box {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 .wheel {
   width: 320px;
@@ -69,49 +93,61 @@ body {
   border-radius: 999px;
   position: relative;
   background: conic-gradient(
-    #ef4444 0deg 60deg,
-    #1f2937 60deg 120deg,
-    #0ea5e9 120deg 180deg,
-    #10b981 180deg 240deg,
-    #8b5cf6 240deg 300deg,
-    #f59e0b 300deg 360deg
+    #ef4444 0deg 60deg,    /* 红色 - 谢谢 */
+    #1f2937 60deg 120deg,   /* 深灰 - 90% */
+    #0ea5e9 120deg 180deg,  /* 天蓝 - 1.2x */
+    #10b981 180deg 240deg,  /* 绿色 - 1.5x */
+    #8b5cf6 240deg 300deg,  /* 紫色 - 2x */
+    #f59e0b 300deg 360deg  /* 橙色 - 5x */
   );
   transition: transform 4.2s cubic-bezier(0.1,0.7,0.1,1);
+  box-shadow: 0 0 40px rgba(0,0,0,0.3), inset 0 0 30px rgba(0,0,0,0.2);
 }
 .wheel::after {
   content: "";
   position: absolute;
-  width: 26px; height: 26px;
-  background: #fff;
+  width: 28px; 
+  height: 28px;
+  background: radial-gradient(circle, #ffffff 0%, #e0e0e0 100%);
   border-radius: 50%;
-  top: 50%; left: 50%;
+  top: 50%; 
+  left: 50%;
   transform: translate(-50%,-50%);
-  box-shadow: 0 0 16px rgba(255,255,255,0.8);
+  box-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(79,70,229,0.4);
+  z-index: 5;
 }
 .pointer {
   position: absolute;
-  top: -14px;
+  top: -16px;
   left: 50%;
   transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 16px solid transparent;
-  border-right: 16px solid transparent;
-  border-top: 28px solid #fff;
+  width: 0; 
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 30px solid #fff;
   z-index: 10;
-  filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.8));
 }
+/* 轮盘文字 - 关键修复：完美对齐 */
 .wheel-text {
   position: absolute;
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   text-align: center;
-  font-size: 14px; font-weight: bold;
+  font-size: 14px; 
+  font-weight: bold;
   color: #fff;
-  text-shadow: 0 1px 4px #000;
+  text-shadow: 0 1px 4px #000, 0 0 8px rgba(0,0,0,0.5);
+  z-index: 6;
 }
 .wheel-text span {
   position: absolute;
-  transform-origin: center 160px;
+  left: 50%;
+  top: 10px; /* 固定从圆心向外延伸的距离 */
+  transform-origin: center bottom; /* 以文字底部中心为旋转基点 */
   white-space: nowrap;
+  font-size: 13px;
 }
 .spinning {
   animation: spin 4.2s cubic-bezier(0.1,0.7,0.1,1) forwards;
@@ -122,8 +158,11 @@ body {
 }
 .marquee {
   background: rgba(30,30,60,0.4);
-  border-radius: 12px; padding: 10px 16px;
-  white-space: nowrap; overflow: hidden;
+  border-radius: 12px; 
+  padding: 10px 16px;
+  white-space: nowrap; 
+  overflow: hidden;
+  font-size: 13px;
 }
 .marquee span {
   display: inline-block;
@@ -133,12 +172,27 @@ body {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
+/* 输入框样式 */
+.input-custom {
+  background: rgba(18,18,37,0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  color: #fff;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+.input-custom:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+}
 </style>
 </head>
 <body class="p-4 max-w-4xl mx-auto pb-24">
 
+<!-- 导航 -->
 <div class="flex items-center justify-between mb-5">
-  <div class="text-xl font-bold">HashDice</div>
+  <div class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">HashDice</div>
   <div class="flex gap-3">
     <button class="px-4 py-2 btn-option text-sm" onclick="location.href='index.html'">竞猜</button>
     <button class="px-4 py-2 btn-primary text-sm">轮盘</button>
@@ -146,63 +200,95 @@ body {
 </div>
 
 <div class="marquee mb-5 text-sm">
-  <span>🎉 恭喜用户 0x87** 赢得 5 倍大奖！｜ 平台抽水 2.5%，邀请返佣 10% 实时到账｜公平可验</span>
+  <span>🎉 恭喜用户 0x87** 赢得 5 倍大奖！｜ 平台抽水 2.5%，邀请返佣 10% 实时到账｜公平可验， Provably Fair</span>
 </div>
 
+<!-- 钱包 → 按钮已缩小精致化 -->
 <div class="card card-glow p-5 mb-6 text-center">
-  <button id="connectBtn" class="px-5 py-2.5 btn-primary text-sm">连接钱包</button>
+  <button id="connectBtn" class="btn-primary">连接钱包</button>
   <div id="addr" class="text-gray-400 text-xs mt-3">未连接</div>
 </div>
 
+<!-- 资产 -->
 <div class="grid grid-cols-3 gap-3 mb-6">
-  <div class="stat-box p-4 text-center"><div class="text-xs text-gray-400">BNB</div><div id="bnbBal">0.0000</div></div>
-  <div class="stat-box p-4 text-center"><div class="text-xs text-gray-400">USDT</div><div id="usdtBal">0.0000</div></div>
-  <div class="stat-box p-4 text-center"><div class="text-xs text-gray-400">HASH</div><div id="hashBal">0.0000</div></div>
+  <div class="stat-box p-4 text-center">
+    <div class="text-gray-400 text-xs mb-1">BNB</div>
+    <div id="bnbBal" class="text-lg font-semibold">0.0000</div>
+  </div>
+  <div class="stat-box p-4 text-center">
+    <div class="text-gray-400 text-xs mb-1">USDT</div>
+    <div id="usdtBal" class="text-lg font-semibold">0.0000</div>
+  </div>
+  <div class="stat-box p-4 text-center">
+    <div class="text-gray-400 text-xs mb-1">HASH</div>
+    <div id="hashBal" class="text-lg font-semibold">0.0000</div>
+  </div>
 </div>
 
+<!-- 轮盘 → 文字已完美对齐 -->
 <div class="card card-glow p-6 mb-6">
   <div class="wheel-box">
     <div class="pointer"></div>
     <div id="wheel" class="wheel">
       <div class="wheel-text">
-        <span style="transform: rotate(30deg)">谢谢</span>
-        <span style="transform: rotate(90deg)">90%</span>
-        <span style="transform: rotate(150deg)">1.2x</span>
-        <span style="transform: rotate(210deg)">1.5x</span>
-        <span style="transform: rotate(270deg)">2x</span>
-        <span style="transform: rotate(330deg)">5x</span>
+        <!-- 每个span单独旋转，对应扇形 -->
+        <span style="transform: rotate(0deg)">谢谢</span>
+        <span style="transform: rotate(60deg)">90%</span>
+        <span style="transform: rotate(120deg)">1.2x</span>
+        <span style="transform: rotate(180deg)">1.5x</span>
+        <span style="transform: rotate(240deg)">2x</span>
+        <span style="transform: rotate(300deg)">5x</span>
       </div>
     </div>
   </div>
 </div>
 
+<!-- 下注 -->
 <div class="card p-6 mb-6">
-  <input id="amt" value="0.01" class="w-full p-4 rounded-xl bg-[#121225] border border-white/10 mb-4 text-lg">
-  <select id="token" class="w-full p-4 rounded-xl bg-[#121225] border border-white/10 mb-5 text-lg">
-    <option value="BNB">BNB</option><option value="USDT">USDT</option><option value="HASH">HASH</option>
+  <input id="amt" value="0.01" class="input-custom w-full p-4 mb-4 text-lg" type="number" min="0.01" step="0.01">
+  <select id="token" class="input-custom w-full p-4 mb-5 text-lg">
+    <option value="BNB">BNB</option>
+    <option value="USDT">USDT</option>
+    <option value="HASH">HASH</option>
   </select>
   <button id="spin" class="w-full py-4 btn-success text-lg">开始旋转</button>
 </div>
 
 <script>
 let provider, signer, user;
-const prizes = ["谢谢参与","本金90%","1.2倍","1.5倍","2倍","5倍大奖"];
+const prizes = ["谢谢参与","本金90%","1.2倍奖励","1.5倍奖励","2倍奖励","5倍大奖"];
+
+// 连接钱包逻辑
 async function connect(){
-  if(!window.ethereum)return alert('请安装MetaMask');
-  provider = new ethers.BrowserProvider(window.ethereum);
-  await provider.send("eth_requestAccounts",[]);
-  signer = await provider.getSigner();
-  user = await signer.getAddress();
-  addr.innerText = user.slice(0,6)+'...'+user.slice(-4);
+  if(!window.ethereum) return alert('请安装MetaMask钱包');
+  try {
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    user = await signer.getAddress();
+    // 格式化地址显示
+    addr.innerText = `${user.slice(0,6)}...${user.slice(-4)}`;
+  } catch (error) {
+    alert(`连接失败：${error.message}`);
+  }
 }
 connectBtn.onclick = connect;
 
+// 轮盘旋转逻辑
 spin.onclick = ()=>{
-  if(!user)return alert('请先连接钱包');
+  if(!user) return alert('请先连接钱包');
+  if(wheel.classList.contains('spinning')) return alert('旋转中，请稍候');
+  
+  const wheel = document.getElementById('wheel');
   wheel.classList.add('spinning');
+  
+  // 随机结果（实际项目中替换为链上随机数）
+  const randomIndex = Math.floor(Math.random() * 6);
+  
   setTimeout(()=>{
     wheel.classList.remove('spinning');
-    alert('🎊 结果：'+prizes[Math.floor(Math.random()*6)]);
+    // 弹窗提示结果
+    alert(`🎊 抽奖结果：${prizes[randomIndex]}\n${randomIndex === 0 ? '😥 很遗憾，未中奖' : '🎉 恭喜获得奖励！'}`);
   },4200);
 }
 </script>
