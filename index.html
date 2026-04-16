@@ -123,7 +123,7 @@
 
   <input id="amount" class="input-box w-full mb-3" value="0.01" type="number" min="0.001">
 
-  <select id="token" class="input-box w-full mb-4">
+  <select id="tokenSelect" class="input-box w-full mb-4">
     <option value="BNB">BNB</option>
     <option value="USDT">USDT</option>
     <option value="HASH">HASH</option>
@@ -196,7 +196,7 @@
 
 <script>
 // ==========================
-// 这里之后填你的合约地址
+// 这里填你的合约地址（部署后填）
 // ==========================
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -285,9 +285,10 @@ betBtn.onclick = async () => {
   if (choice === 0) return alert("请选择 小/大");
   try {
     const amt = ethers.parseEther(amount.value);
-    const token = token.value;
-    const tokenAddr = TOKEN_ADDR[token];
-    const value = token === "BNB" ? amt : 0;
+    // 修复：把 token 改成 tokenSelect，解决变量冲突
+    const tokenKey = tokenSelect.value;
+    const tokenAddr = TOKEN_ADDR[tokenKey];
+    const value = tokenKey === "BNB" ? amt : 0;
     const code = inviteCode.value || "";
 
     const tx = await contract.bet(choice, tokenAddr, amt, code, { value });
