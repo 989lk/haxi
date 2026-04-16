@@ -8,31 +8,31 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body {
-  background: #0c0c1a;
-  background-image: radial-gradient(circle at 20% 20%, rgba(48,32,100,0.35), transparent 45%),
-                    radial-gradient(circle at 80% 80%, rgba(22,12,60,0.4), transparent 45%);
-  color: #fff;
-  min-height: 100vh;
+  背景: #0c0c1a;
+  背景图像: 径向渐变(圆 在 20% 20%, rgba(48,32,100,0.35), 透明 45%),
+                    径向渐变(圆在80%,rgba2212600.4)透明45;
+  颜色: #fff;
+  最小高度: 100vh;
   font-family: 'Inter', system-ui, sans-serif;
 }
 .card {
   background: rgba(22,22,40,0.65);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
+  背景滤镜: 模糊(16像素);
+  边框: 1像素 实线 rgba(255,255,255,0.08);
+  边框圆角: 20像素;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  overflow: hidden;
+  溢出: 隐藏;
 }
 .card-glow {
-  position: relative;
+  位置: 相对;
 }
 .card-glow::before {
   content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  padding: 1px;
-  background: linear-gradient(135deg, #4f46e5, #06b6d4, #4f46e5);
+  位置: 绝对;
+  内边距: 0;
+  边框圆角: 20像素;
+  填充: 1像素;
+  背景: 线性渐变(135度, #4f46e5, #06b6d4, #4f46e5);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   opacity: 0.4;
@@ -43,7 +43,7 @@ body {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
   border-radius: 12px;
   font-weight: 600;
-  font-size: 13px;
+  字体大小: 13像素;
   padding: 6px 16px;
   transition: all 0.25s ease;
   box-shadow: 0 0 10px rgba(79,70,229,0.2);
@@ -53,7 +53,7 @@ body {
   box-shadow: 0 0 20px rgba(79,70,229,0.4);
 }
 .btn-success {
-  background: linear-gradient(90deg, #10b981, #059669);
+  背景: linear-gradient(90deg, #10b981, #059669);
   border-radius: 14px;
   font-weight: 600;
   transition: all 0.25s ease;
@@ -65,13 +65,13 @@ body {
 }
 .btn-option {
   background: rgba(30,30,60,0.5);
-  border: 1px solid rgba(255,255,255,0.08);
+  边框: 1像素 实线 rgba(255,255,255,0.08);
   border-radius: 14px;
   transition: all 0.25s ease;
 }
 .stat-box {
-  background: rgba(26,26,44,0.5);
-  border-radius: 16px;
+  背景: rgba(26,26,44,0.5);
+  边框圆角: 16px;
   backdrop-filter: blur(10px);
   transition: transform 0.2s ease;
 }
