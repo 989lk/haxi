@@ -41,10 +41,10 @@ body {
 /* 按钮样式优化 - 缩小精致化 */
 .btn-primary {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  border-radius: 12px; /* 更圆润 */
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 13px; /* 缩小字体 */
-  padding: 6px 16px; /* 缩小内边距 */
+  font-size: 13px;
+  padding: 6px 16px;
   transition: all 0.25s ease;
   box-shadow: 0 0 10px rgba(79,70,229,0.2);
 }
@@ -79,7 +79,7 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-/* 轮盘核心样式 - 修复对齐与光效 */
+/* 轮盘核心样式 - 修复文字居中 */
 .wheel-box {
   position: relative;
   display: flex;
@@ -98,7 +98,7 @@ body {
     #0ea5e9 120deg 180deg,  /* 天蓝 - 1.2x */
     #10b981 180deg 240deg,  /* 绿色 - 1.5x */
     #8b5cf6 240deg 300deg,  /* 紫色 - 2x */
-    #f59e0b 300deg 360deg  /* 橙色 - 5x */
+    #f59e0b 300deg 360deg   /* 橙色 - 5x */
   );
   transition: transform 4.2s cubic-bezier(0.1,0.7,0.1,1);
   box-shadow: 0 0 40px rgba(0,0,0,0.3), inset 0 0 30px rgba(0,0,0,0.2);
@@ -129,25 +129,28 @@ body {
   z-index: 10;
   filter: drop-shadow(0 0 12px rgba(255,255,255,0.8));
 }
-/* 轮盘文字 - 关键修复：完美对齐 */
+/* 轮盘文字 - 关键修复：完美居中 */
 .wheel-text {
   position: absolute;
   width: 100%; 
   height: 100%;
-  text-align: center;
-  font-size: 14px; 
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 1px 4px #000, 0 0 8px rgba(0,0,0,0.5);
   z-index: 6;
+  pointer-events: none;
 }
 .wheel-text span {
   position: absolute;
+  /* 定位到轮盘圆心 */
   left: 50%;
-  top: 10px; /* 固定从圆心向外延伸的距离 */
-  transform-origin: center bottom; /* 以文字底部中心为旋转基点 */
+  top: 50%;
+  /* 旋转原点设为圆心 */
+  transform-origin: center center;
+  /* 文字向外偏移，显示在扇形中心 */
+  transform: translate(-50%, -50%) rotate(var(--rotate)) translate(0, -100px) rotate(var(--fix));
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
 }
 .spinning {
   animation: spin 4.2s cubic-bezier(0.1,0.7,0.1,1) forwards;
@@ -225,19 +228,19 @@ body {
   </div>
 </div>
 
-<!-- 轮盘 → 文字已完美对齐 -->
+<!-- 轮盘 → 文字已完美居中 -->
 <div class="card card-glow p-6 mb-6">
   <div class="wheel-box">
     <div class="pointer"></div>
     <div id="wheel" class="wheel">
       <div class="wheel-text">
-        <!-- 每个span单独旋转，对应扇形 -->
-        <span style="transform: rotate(0deg)">谢谢</span>
-        <span style="transform: rotate(60deg)">90%</span>
-        <span style="transform: rotate(120deg)">1.2x</span>
-        <span style="transform: rotate(180deg)">1.5x</span>
-        <span style="transform: rotate(240deg)">2x</span>
-        <span style="transform: rotate(300deg)">5x</span>
+        <!-- 每个span单独设置旋转角度，精准居中 -->
+        <span style="--rotate: 30deg; --fix: rotate(0deg)">谢谢</span>
+        <span style="--rotate: 90deg; --fix: rotate(0deg)">90%</span>
+        <span style="--rotate: 150deg; --fix: rotate(0deg)">1.2x</span>
+        <span style="--rotate: 210deg; --fix: rotate(0deg)">1.5x</span>
+        <span style="--rotate: 270deg; --fix: rotate(0deg)">2x</span>
+        <span style="--rotate: 330deg; --fix: rotate(0deg)">5x</span>
       </div>
     </div>
   </div>
