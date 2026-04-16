@@ -3,351 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HashDice - 黑金猜大小</title>
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>终局 · HASH</title>
 <style>
-body {
-  background: #0F0F0F;
-  background-image: radial-gradient(circle at 20% 20%, rgba(255,187,0,0.08), transparent 45%),
-                    radial-gradient(circle at 80% 80%, rgba(255,215,0,0.06), transparent 45%);
-  color: #fff;
-  min-height: 100vh;
-  font-family: system-ui, sans-serif;
-}
-.card {
-  background: rgba(20,20,20,0.8);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,215,0,0.15);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  overflow: hidden;
-}
-.card-glow::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  padding: 1px;
-  background: linear-gradient(135deg, #FFD700, #FFB700, #FFD700);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  opacity: 0.3;
-  pointer-events: none;
-}
-.btn-primary {
-  background: linear-gradient(90deg, #FFD700, #FFB700);
-  border-radius: 12px;
-  font-weight: 600;
-  color: #111;
-  transition: all 0.25s ease;
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 20px rgba(255,215,0,0.3);
-}
-.btn-success {
-  background: linear-gradient(90deg, #FFB700, #FFD700);
-  border-radius: 14px;
-  font-weight: 600;
-  color: #111;
-  transition: all 0.25s ease;
-}
-.btn-success:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 20px rgba(255,183,0,0.3);
-}
-.btn-option {
-  background: rgba(30,30,30,0.7);
-  border: 1px solid rgba(255,215,0,0.15);
-  border-radius: 14px;
-  transition: all 0.25s ease;
-  color: #fff;
-}
-.btn-option.active {
-  background: rgba(255,215,0,0.15);
-  border-color: #FFD700;
-  color: #FFD700;
-}
-.btn-quick {
-  background: rgba(35,35,35,0.8);
-  border: 1px solid rgba(255,215,0,0.12);
-  border-radius: 10px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: #fff;
-}
-.stat-box {
-  background: rgba(25,25,25,0.7);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,215,0,0.1);
-}
-.hash-box {
-  background: rgba(20,20,20,0.9);
-  border: 1px solid rgba(255,215,0,0.15);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-family: monospace;
-  font-size: 12px;
-  word-break: break-all;
-  color: #ccc;
-}
-.history-item {
-  background: rgba(26,26,26,0.7);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 12px;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  border: 1px solid rgba(255,215,0,0.08);
-}
-.trend-item {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: bold;
-  background: #1a1a1a;
-  border: 1px solid rgba(255,215,0,0.2);
-}
-.input-custom {
-  background: rgba(20,20,20,0.9);
-  border: 1px solid rgba(255,215,0,0.15);
-  border-radius: 14px;
-  color: #fff;
-  padding: 12px 16px;
-}
-
-@keyframes numberBlast {
-  0% { transform: scale(1); opacity:0.6 }
-  30% { transform: scale(1.6); opacity:1; color: #FFD700; text-shadow:0 0 20px #FFD700 }
-  100% { transform: scale(1); opacity:1; color: #FFD700 }
-}
-.number-blast {
-  animation: numberBlast 0.9s ease forwards;
-}
-@keyframes flash {
-  0% { background:rgba(255,215,0,0.1) }
-  50% { background:rgba(255,215,0,0.25) }
-  100% { background:transparent }
-}
-.flash-animate {
-  animation: flash 0.6s ease;
-}
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    background: #0F0F11;
+    color: #EAEAEA;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-bottom: 60px;
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .header {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #D4AF37;
+    letter-spacing: 1px;
+  }
+  .section {
+    background: #141417;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #222;
+  }
+  .section-title {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 12px;
+  }
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #1A1A22, #111);
+    color: #EAEA;
+    border: 1px solid #333;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #D4AF37, #B48F27);
+    color: #111;
+  }
+  .input {
+    width: 100%;
+    padding: 14px 16px;
+    background: #0A0A0D;
+    border: 1px solid #222;
+    border-radius: 12px;
+    color: #EEE;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .result-box {
+    background: #0A0A0D;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 18px;
+    color: #D4AF37;
+    font-weight: 600;
+  }
+  .footer {
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+    padding: 20px 0;
+  }
 </style>
 </head>
-<body class="p-4 max-w-4xl mx-auto pb-24">
+<body>
 
-<div class="flex items-center justify-between mb-4">
-  <div class="text-xl font-bold text-yellow-400">HashDice</div>
-  <button class="px-4 py-2 btn-primary text-sm">黑金猜大小</button>
-</div>
+<div class="container">
+  <div class="header">终局 · HASH</div>
 
-<div class="grid grid-cols-3 gap-3 mb-5">
-  <div class="stat-box p-3 text-center">
-    <div class="text-xs text-gray-400">在线</div><div class="text-sm font-semibold text-yellow-400">1289</div>
+  <div class="section">
+    <div class="section-title">连接终局</div>
+    <button class="btn btn-primary" id="connectWallet">连接钱包</button>
   </div>
-  <div class="stat-box p-3 text-center">
-    <div class="text-xs text-gray-400">总开奖</div><div class="text-sm font-semibold text-yellow-400">18.6万</div>
-  </div>
-  <div class="stat-box p-3 text-center">
-    <div class="text-xs text-gray-400">抽水</div><div class="text-sm font-semibold text-yellow-400">2.5%</div>
-  </div>
-</div>
 
-<div class="card card-glow p-5 mb-6 text-center">
-  <button id="connectBtn" class="px-4 py-2 btn-primary text-sm">连接钱包</button>
-  <div id="addr" class="text-gray-400 text-xs mt-2">未连接</div>
-</div>
+  <div class="section">
+    <div class="section-title">投入额度</div>
+    <input class="input" id="betAmount" placeholder="请输入投入额度">
+    <button class="btn" id="betSmall">小</button>
+    <button class="btn" id="betBig">大</button>
+  </div>
 
-<div class="grid grid-cols-3 gap-3 mb-6">
-  <div class="stat-box p-4 text-center">
-    <div class="text-xs text-gray-400">BNB</div><div id="bnbBal" class="text-lg font-semibold text-yellow-400">0.0000</div>
+  <div class="section">
+    <div class="section-title">终局结算</div>
+    <div class="result-box" id="finalResult">等待终局</div>
   </div>
-  <div class="stat-box p-4 text-center">
-    <div class="text-xs text-gray-400">USDT</div><div id="usdtBal" class="text-lg font-semibold text-yellow-400">0.0000</div>
-  </div>
-  <div class="stat-box p-4 text-center">
-    <div class="text-xs text-gray-400">HASH</div><div id="hashBal" class="text-lg font-semibold text-yellow-400">0.0000</div>
-  </div>
-</div>
 
-<div class="card card-glow p-6 mb-6">
-  <h3 class="text-lg font-bold mb-4 text-yellow-400">🎲 哈希猜大小</h3>
-  <div class="flex gap-2 mb-3">
-    <button class="btn-quick flex-1" onclick="setBet(0.01)">0.01</button>
-    <button class="btn-quick flex-1" onclick="setBet(0.1)">0.1</button>
-    <button class="btn-quick flex-1" onclick="setBet(0.5)">0.5</button>
-    <button class="btn-quick flex-1" onclick="setBet(1)">1</button>
-    <button class="btn-quick flex-1" onclick="maxBet()">MAX</button>
+  <div class="section">
+    <div class="section-title">终局记录</div>
+    <div id="historyList">暂无记录</div>
   </div>
-  <input id="amount" class="input-custom w-full p-4 mb-3" value="0.01" type="number" min="0.001">
-  <select id="token" class="input-custom w-full p-4 mb-4">
-    <option>BNB</option><option>USDT</option><option>HASH</option>
-  </select>
-  <div>开奖哈希：</div>
-  <div class="hash-box" id="hashResult">等待开奖...</div>
-  <div id="flashBox" class="text-center my-4 p-3 rounded-xl">
-    <div class="text-sm text-gray-400">开奖数字</div>
-    <div id="numResult" class="text-4xl font-bold text-yellow-400">-</div>
-  </div>
-  <div class="flex gap-3 mb-4">
-    <button id="btnSmall" class="flex-1 py-3 btn-option">小 (0-4)</button>
-    <button id="btnBig" class="flex-1 py-3 btn-option">大 (5-9)</button>
-  </div>
-  <button id="btnPlay" class="w-full py-4 btn-success text-lg">确认下注</button>
-</div>
 
-<div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-yellow-400">📊 最近走势</h4>
-  <div id="trend" class="flex gap-1 flex-wrap"></div>
-</div>
-
-<div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-yellow-400">📜 开奖记录</h4>
-  <div id="historyList"></div>
-</div>
-
-<div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-yellow-400">📈 我的战绩</h4>
-  <div class="grid grid-cols-3 gap-2 text-center text-sm">
-    <div><div class="text-gray-400">赢</div><div id="winCount" class="text-green-400">0</div></div>
-    <div><div class="text-gray-400">输</div><div id="loseCount" class="text-red-400">0</div></div>
-    <div><div class="text-gray-400">总</div><div id="totalCount" class="text-yellow-400">0</div></div>
-  </div>
-</div>
-
-<div class="card p-5">
-  <h4 class="font-semibold mb-2 text-yellow-400">我的邀请</h4>
-  <input id="refLink" readonly class="input-custom w-full p-3 text-sm mb-2">
-  <button onclick="copyRefLink()" class="w-full py-2 btn-option">复制邀请链接</button>
+  <div class="footer">终局 · HASH © 2025 终局纪元</div>
 </div>
 
 <script>
-let provider, signer, user;
-let betType = null;
-let playing = false;
-let history = [];
-let win = 0, lose = 0, total = 0;
+// 连接钱包
+document.getElementById('connectWallet').addEventListener('click', () => {
+  document.getElementById('connectWallet').innerText = '已连接钱包';
+  document.getElementById('finalResult').innerText = '已进入终局';
+});
 
-const USDT_ADDRESS = "0x55d398c26d7bd02285b074434aa690b7130832e";
-const HASH_ADDRESS = "0x0000000000000000000000000000000000000000";
+// 押小
+document.getElementById('betSmall').addEventListener('click', () => {
+  document.getElementById('finalResult').innerText = '终局：小';
+  let his = document.createElement('div');
+  his.innerText = '终局：小 · 胜出';
+  document.getElementById('historyList').appendChild(his);
+});
 
-async function connectWallet() {
-  if (!window.ethereum) return alert("请安装MetaMask");
-  try {
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    user = await signer.getAddress();
-    document.getElementById("addr").innerText = user.slice(0,6)+"..."+user.slice(-4);
-    document.getElementById("connectBtn").innerText = "已连接";
-    loadBalances();
-  } catch (e) { alert("连接失败"); }
-}
-
-async function loadBalances() {
-  if (!user) return;
-  // BNB
-  const bnb = await provider.getBalance(user);
-  document.getElementById("bnbBal").innerText = ethers.formatEther(bnb).slice(0,8);
-
-  // USDT
-  try {
-    const usdtContract = new ethers.Contract(USDT_ADDRESS, ["function balanceOf(address) view returns(uint)"], provider);
-    const usdt = await usdtContract.balanceOf(user);
-    document.getElementById("usdtBal").innerText = ethers.formatEther(usdt).slice(0,8);
-  } catch(e){}
-
-  // HASH
-  try {
-    const hashContract = new ethers.Contract(HASH_ADDRESS, ["function balanceOf(address) view returns(uint)"], provider);
-    const hash = await hashContract.balanceOf(user);
-    document.getElementById("hashBal").innerText = ethers.formatEther(hash).slice(0,8);
-  } catch(e){}
-}
-
-function setBet(v) { amount.value = v; }
-function maxBet() { amount.value = 10; }
-
-function genHash() {
-  const arr = crypto.getRandomValues(new Uint8Array(16));
-  const hash = Array.from(arr).map(x=>x.toString(16).padStart(2,"0")).join("");
-  const num = parseInt(hash.slice(-4),16)%10;
-  return { hash, num };
-}
-
-function playBlast(num) {
-  numResult.innerText = num;
-  numResult.classList.add("number-blast");
-  flashBox.classList.add("flash-animate");
-  setTimeout(()=>{
-    numResult.classList.remove("number-blast");
-    flashBox.classList.remove("flash-animate");
-  },900);
-}
-
-function renderTrend() {
-  let html = "";
-  let list = [...history].reverse().slice(-10);
-  list.forEach(item=>{
-    html+=`<div class="trend-item ${item.type=='小'?'text-green-400':'text-red-400'}">${item.num}</div>`;
-  });
-  trend.innerHTML = html;
-}
-
-function addHistory(num, bet, isWin, amount) {
-  let type = num<=4?"小":"大";
-  history.unshift({num,type,isWin,amount,time:new Date().toLocaleTimeString()});
-  if (history.length>20) history.pop();
-  total++; isWin?win++:lose++;
-  winCount.innerText=win; loseCount.innerText=lose; totalCount.innerText=total;
-  renderHistory(); renderTrend();
-}
-
-function renderHistory() {
-  let h = "";
-  history.forEach(item=>{
-    h+=`<div class="history-item"><div>${item.time} | ${item.num} ${item.type}</div><div style="color:${item.isWin?'#10b981':'#ef4444'}">${item.isWin?"赢":"输"}</div></div>`;
-  });
-  historyList.innerHTML = h;
-}
-
-function copyRefLink() {
-  refLink.value = location.href;
-  navigator.clipboard.writeText(refLink.value).then(()=>alert("复制成功"));
-}
-
-btnPlay.onclick = async ()=>{
-  if (!user) return alert("请连接钱包");
-  if (!betType) return alert("请选大/小");
-  if (playing) return;
-  playing = true;
-  btnPlay.innerText = "开奖中...";
-  btnPlay.disabled = true;
-
-  const { hash, num } = genHash();
-  hashResult.innerText = hash;
-  playBlast(num);
-
-  setTimeout(()=>{
-    const isWin = (betType=="small"&&num<=4)||(betType=="big"&&num>=5);
-    addHistory(num,betType,isWin,amount.value);
-    alert(isWin?"🎉 恭喜中奖！":"😥 再接再厉");
-    playing = false;
-    btnPlay.innerText = "确认下注";
-    btnPlay.disabled = false;
-    loadBalances();
-  },1000);
-};
-
-btnSmall.onclick=()=>{betType="small";btnSmall.classList.add("active");btnBig.classList.remove("active");}
-btnBig.onclick=()=>{betType="big";btnBig.classList.add("active");btnSmall.classList.remove("active");}
-connectBtn.onclick=connectWallet;
+// 押大
+document.getElementById('betBig').addEventListener('click', () => {
+  document.getElementById('finalResult').innerText = '终局：大';
+  let his = document.createElement('div');
+  his.innerText = '终局：大 · 胜出';
+  document.getElementById('historyList').appendChild(his);
+});
 </script>
+
 </body>
 </html>
