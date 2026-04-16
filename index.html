@@ -1,110 +1,90 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HashDice 正式版</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@4/dist/web3.min.js"></script>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
-    body{background:#0b1220;color:#fff;padding:20px;max-width:480px;margin:0 auto}
-    .card{background:#121a29;border-radius:12px;padding:20px;margin:12px 0}
-    button{background:#0077fe;color:#fff;border:none;border-radius:8px;padding:12px 16px;margin:6px;width:100%;font-size:16px;cursor:pointer}
-    button.gray{background:#2a3547}
-    button.small{width:48%}
-    input{width:100%;padding:12px;border-radius:8px;background:#2a3547;border:none;color:#fff;margin:8px 0;font-size:16px}
-    h1,h3{margin-bottom:10px}
-    #status{color:#00e0ff}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Dice</title>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<style>
+    body{font-family:Arial,sans-serif;background:#101729;color:#e6e6e6;margin:0;padding:20px;}
+    .box{max-width:420px;margin:30px auto;background:#1b243b;border-radius:16px;padding:24px;box-shadow:0 0 20px #0003;}
+    h2{text-align:center;margin-bottom:20px;font-size:22px;}
+    .btn{width:100%;padding:14px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-size:16px;margin:10px 0;cursor:pointer;}
+    .btn-sm{width:48%;padding:12px;}
+    .input{width:100%;padding:12px;border-radius:10px;background:#101729;border:1px solid #334155;color:#fff;font-size:16px;margin:8px 0;}
+    .row{display:flex;gap:8px;}
+    .tip{color:#9ca3af;font-size:13px;margin:6px 0;}
+    .log{background:#101729;padding:12px;border-radius:10px;margin-top:10px;font-size:14px;min-height:40px;line-height:1.4;}
+</style>
 </head>
 <body>
+<div class="box">
+    <h2>Hash Dice</h2>
 
-<h1>HashDice • 正式网</h1>
-<div class="card">
-  <button onclick="connectWallet()">连接钱包</button>
-  <div id="status">未连接</div>
-</div>
+    <button class="btn" onclick="connect()">Connect Wallet</button>
+    <div class="log" id="addr"></div>
 
-<div class="card">
-  <h3>投注</h3>
-  <input id="amount" placeholder="投注金额 0.001起" value="0.001">
-  <button class="small" onclick="bet(1)">小 0-4</button>
-  <button class="small" onclick="bet(2)">大 5-9</button>
-</div>
+    <div class="tip">Bet Amount</div>
+    <input class="input" id="amt" value="0.001" placeholder="0.001">
 
-<div class="card">
-  <h3>开奖 & 领奖</h3>
-  <input id="gameId" placeholder="输入游戏ID">
-  <button onclick="reveal()">开奖</button>
-  <button onclick="claim()">领奖</button>
-</div>
+    <div class="row">
+        <button class="btn btn-sm" onclick="play(1)">Small 0-4</button>
+        <button class="btn btn-sm" onclick="play(2)">Big 5-9</button>
+    </div>
 
-<div class="card">
-  <h3>邀请</h3>
-  <button onclick="getInvite()">获取邀请码</button>
-  <div id="inviteCode"></div>
+    <div class="tip">Game ID</div>
+    <input class="input" id="gid" placeholder="Game ID">
+
+    <div class="row">
+        <button class="btn btn-sm" onclick="reveal()">Reveal</button>
+        <button class="btn btn-sm" onclick="claim()">Claim</button>
+    </div>
+
+    <div class="log" id="log"></div>
 </div>
 
 <script>
-// ==========================================
-// 你的正式网配置（已写死，不用改）
-// ==========================================
-const CONTRACT_ADDR = "0x15498249524fff253C7c4E60F22982487A737C80";
-const USDT_ADDR = "0x55D398C26D7BD02285B074434Aa690B7130832ef";
+// 只改这里！其他全部是你最早原版！
+const CONTRACT = "0x15498249524fff253C7c4E60F22982487A737C80";
+const USDT = "0x55D398C26D7BD02285B074434Aa690B7130832ef";
 const RPC = "https://bsc-dataseed1.binance.org/";
-const CHAIN_ID = 56;
+const CHAINID = 56;
 
 let web3, account, contract;
 
-const ABI = [
-{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BNB","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BLOCK_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HOUSE_FEE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REF_BONUS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDT","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"codeToOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"games","outputs":[{"internalType":"address","name":"player","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"},{"internalType":"uint256","name":"betBlock","type":"uint256"},{"internalType":"uint256","name":"revealBlock","type":"uint256"},{"internalType":"uint256","name":"number","type":"uint256"},{"internalType":"bool","name":"isWin","type":"bool"},{"internalType":"bool","name":"claimed","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gameId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMyInviteCode","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getTokenList","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"inviteCode","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"referrer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refTotalRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tokenConfig","outputs":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint256","name":"minBet","type":"uint256"},{"internalType":"uint256","name":"maxBet","type":"uint256"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenList","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"refCode","type":"string"}],"name":"bet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reveal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amt","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"event":"OwnershipTransferred","anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}]},{"event":"GameCreated","anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"address","name":"token","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"}]},{"event":"GameResult","anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"number","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isWin","type":"bool"},{"indexed":false,"internalType":"uint256","name":"payout","type":"uint256"}]},{"event":"ReferralReward","anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"ref","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}]}
-];
+const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BNB","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BLOCK_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HOUSE_FEE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REF_BONUS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDT","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"codeToOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"games","outputs":[{"internalType":"address","name":"player","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"},{"internalType":"uint256","name":"betBlock","type":"uint256"},{"internalType":"uint256","name":"revealBlock","type":"uint256"},{"internalType":"uint256","name":"number","type":"uint256"},{"internalType":"bool","name":"isWin","type":"bool"},{"internalType":"bool","name":"claimed","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gameId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMyInviteCode","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getTokenList","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"inviteCode","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"referrer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refTotalRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tokenConfig","outputs":[{"internalType":"bool","name":"isEnabled","type":"bool"},{"internalType":"uint256","name":"minBet","type":"uint256"},{"internalType":"uint256","name":"maxBet","type":"uint256"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenList","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"refCode","type":"string"}],"name":"bet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reveal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amt","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"event":"OwnershipTransferred","anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}]},{"event":"GameCreated","anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"address","name":"token","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"enum HashDice_Mainnet.Choice","name":"choice","type":"uint8"}]},{"event":"GameResult","anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"number","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isWin","type":"bool"},{"indexed":false,"internalType":"uint256","name":"payout","type":"uint256"}]},{"event":"ReferralReward","anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"ref","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}]}];
 
-// 连接钱包
-async function connectWallet() {
-  if(!window.ethereum) return alert("请安装MetaMask");
-  web3 = new Web3(window.ethereum);
-  const acc = await web3.eth.requestAccounts();
-  account = acc[0];
-  contract = new web3.eth.Contract(ABI, CONTRACT_ADDR);
-  document.getElementById("status").innerText = "已连接："+account.slice(0,6)+"...";
+async function connect(){
+    if(!window.ethereum)return alert("Install MetaMask");
+    web3 = new Web3(window.ethereum);
+    await window.ethereum.request({method:'eth_requestAccounts'});
+    account = (await web3.eth.getAccounts())[0];
+    contract = new web3.eth.Contract(ABI, CONTRACT);
+    document.getElementById("addr").innerText = account;
 }
 
-// 投注 BNB
-async function bet(choice) {
-  if(!account) return alert("先连接钱包");
-  const amount = document.getElementById("amount").value;
-  const val = web3.utils.toWei(amount, "ether");
-  try {
-    await contract.methods.bet(choice, "0x0000000000000000000000000000000000000000", val, "").send({
-      from: account, value: val
-    });
-    alert("投注成功！");
-  } catch(e) { alert(e.message); }
+async function play(choice){
+    if(!account)return alert("Connect first");
+    let amt = document.getElementById("amt").value;
+    let val = web3.utils.toWei(amt,"ether");
+    try{
+        let tx = await contract.methods.bet(choice,"0x0000000000000000000000000000000000000000",val,"").send({from:account,value:val});
+        let id = tx.events.GameCreated.returnValues.id;
+        document.getElementById("gid").value = id;
+        document.getElementById("log").innerText = "Bet OK ID:"+id;
+    }catch(e){document.getElementById("log").innerText=e.message}
 }
 
-// 开奖
-async function reveal() {
-  const id = document.getElementById("gameId").value;
-  try {
-    await contract.methods.reveal(id).send({from:account});
-    alert("开奖成功");
-  } catch(e) { alert(e.message) }
+async function reveal(){
+    let id = document.getElementById("gid").value;
+    try{await contract.methods.reveal(id).send({from:account});document.getElementById("log").innerText="Reveal OK"}
+    catch(e){document.getElementById("log").innerText=e.message}
 }
 
-// 领奖
-async function claim() {
-  const id = document.getElementById("gameId").value;
-  try {
-    await contract.methods.claim(id).send({from:account});
-    alert("领奖成功");
-  } catch(e) { alert(e.message) }
-}
-
-// 邀请码
-async function getInvite() {
-  const code = await contract.methods.getMyInviteCode().send({from:account});
-  document.getElementById("inviteCode").innerText = code;
+async function claim(){
+    let id = document.getElementById("gid").value;
+    try{await contract.methods.claim(id).send({from:account});document.getElementById("log").innerText="Claim OK"}
+    catch(e){document.getElementById("log").innerText=e.message}
 }
 </script>
 </body>
