@@ -79,7 +79,7 @@
 </head>
 <body class="max-w-xl mx-auto p-4 pb-32">
 
-<!-- 游戏导航栏（4个游戏，1个可玩，3个待开发） -->
+<!-- 游戏导航 -->
 <div class="glass p-3 flex gap-2 mb-5">
   <div class="game-tab active flex-1 text-center">哈希竞猜</div>
   <div class="game-tab disabled flex-1 text-center">幸运骰子<br><span class="text-xs">待开发</span></div>
@@ -109,7 +109,7 @@
   </div>
 </div>
 
-<!-- 投注区（完整功能） -->
+<!-- 投注区 -->
 <div class="glass p-6 mb-5">
   <h2 class="text-xl font-bold text-cyan-300 mb-4">哈希竞猜 · 按区块开奖</h2>
 
@@ -170,7 +170,7 @@
   </div>
 </div>
 
-<!-- 邀请系统（完整保留） -->
+<!-- 邀请 -->
 <div class="glass p-5">
   <h3 class="font-bold mb-3">邀请奖励</h3>
   <div class="grid grid-cols-2 gap-3 mb-3">
@@ -196,11 +196,9 @@
 
 <script>
 // ==========================
-// 你只需要填这里：合约地址
+// 这里之后填你的合约地址
 // ==========================
-const CONTRACT_ADDRESS = "0x你的合约地址";
-
-const ABI = [{"inputs":[],"name":"getMyInviteCode","outputs":[{"type":"string"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refTotalRewards","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refCount","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint8","name":"choice","type":"uint8"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"refCode","type":"string"}],"name":"bet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reveal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"games","outputs":[{"internalType":"address","name":"player","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint8","name":"choice","type":"uint8"},{"internalType":"uint256","name":"betBlock","type":"uint256"},{"internalType":"uint256","name":"revealBlock","type":"uint256"},{"internalType":"uint256","name":"number","type":"uint256"},{"internalType":"bool","name":"isWin","type":"bool"},{"internalType":"bool","name":"claimed","type":"bool"}],"stateMutability":"view","type":"function"}];
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const TOKEN_ADDR = {
   BNB: "0x0000000000000000000000000000000000000000",
@@ -208,51 +206,96 @@ const TOKEN_ADDR = {
   HASH: "0x0000000000000000000000000000000000000000"
 };
 
-let user, contract;
+const ABI = [{"inputs":[],"name":"getMyInviteCode","outputs":[{"type":"string"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refTotalRewards","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"refCount","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint8","name":"choice","type":"uint8"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"refCode","type":"string"}],"name":"bet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reveal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"games","outputs":[{"internalType":"address","name":"player","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint8","name":"choice","type":"uint8"},{"internalType":"uint256","name":"betBlock","type":"uint256"},{"internalType":"uint256","name":"revealBlock","type":"uint256"},{"internalType":"uint256","name":"number","type":"uint256"},{"internalType":"bool","name":"isWin","type":"bool"},{"internalType":"bool","name":"claimed","type":"bool"}],"stateMutability":"view","type":"function"}];
+
+let provider, signer, user, contract;
 let choice = 0;
 
-function setAmt(v) { document.getElementById("amount").value = v }
-function maxAmt() { document.getElementById("amount").value = 10 }
+function setAmt(v) { amount.value = v }
+function maxAmt() { amount.value = 10 }
 
-btnSmall.onclick = () => { choice=1; btnSmall.style.background="rgba(0,140,255,0.15)"; btnBig.style.background=""; }
-btnBig.onclick = () => { choice=2; btnBig.style.background="rgba(0,140,255,0.15)"; btnSmall.style.background=""; }
-
-connectBtn.onclick = async () => {
-  const p = new ethers.BrowserProvider(window.ethereum);
-  await p.send("eth_requestAccounts", []);
-  const s = await p.getSigner();
-  user = await s.getAddress();
-  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, s);
-  document.getElementById("address").innerText = user.slice(0,6)+"..."+user.slice(-4);
-  loadInvite();
-  loadBalance();
+btnSmall.onclick = () => {
+  choice = 1;
+  btnSmall.style.background = "rgba(0,140,255,0.15)";
+  btnBig.style.background = "";
+};
+btnBig.onclick = () => {
+  choice = 2;
+  btnBig.style.background = "rgba(0,140,255,0.15)";
+  btnSmall.style.background = "";
 };
 
-async function loadInvite(){
+// 连接钱包 + 正常读取余额（已修复）
+connectBtn.onclick = async () => {
+  if (!window.ethereum) return alert("请安装MetaMask");
+  try {
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    user = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+    address.innerText = user.slice(0, 6) + "..." + user.slice(-4);
+    connectBtn.innerText = "已连接";
+
+    await loadAllBalances();
+    await loadInvite();
+  } catch (e) {
+    alert("连接失败：" + e.message);
+  }
+};
+
+// 读取 BNB、USDT、HASH 余额（修复完成）
+async function loadAllBalances() {
+  // BNB
+  const bnb = await provider.getBalance(user);
+  bnbBal.innerText = parseFloat(ethers.formatEther(bnb)).toFixed(4);
+
+  // USDT
+  const usdtContract = new ethers.Contract(TOKEN_ADDR.USDT, ["function balanceOf(address) view returns (uint256)"], provider);
+  const usdtBalRaw = await usdtContract.balanceOf(user);
+  usdtBal.innerText = parseFloat(ethers.formatEther(usdtBalRaw)).toFixed(4);
+
+  // HASH
+  const hashContract = new ethers.Contract(TOKEN_ADDR.HASH, ["function balanceOf(address) view returns (uint256)"], provider);
+  const hashBalRaw = await hashContract.balanceOf(user);
+  hashBal.innerText = parseFloat(ethers.formatEther(hashBalRaw)).toFixed(4);
+}
+
+async function loadInvite() {
+  if (!contract) return;
   const code = await contract.getMyInviteCode();
   inviteCode.value = code;
-  refLink.value = window.location.href + "?code=" + code;
-  refReward.innerText = ethers.formatEther(await contract.refTotalRewards(user)) + " USDT";
-  refCount.innerText = (await contract.refCount(user)).toString();
+  refLink.value = window.location.origin + window.location.pathname + "?code=" + code;
+
+  const reward = await contract.refTotalRewards(user);
+  refReward.innerText = parseFloat(ethers.formatEther(reward)).toFixed(2) + " USDT";
+
+  const count = await contract.refCount(user);
+  refCount.innerText = count.toString();
 }
 
-async function loadBalance(){
-  const bnb = await provider.getBalance(user);
-  bnbBal.innerText = ethers.formatEther(bnb).slice(0,8);
-}
-
-function copyRef(){
-  navigator.clipboard.writeText("邀请码："+inviteCode.value+"\n链接："+refLink.value).then(()=>alert("已复制"));
+function copyRef() {
+  const txt = `邀请码：${inviteCode.value}\n链接：${refLink.value}`;
+  navigator.clipboard.writeText(txt).then(() => alert("已复制邀请信息"));
 }
 
 betBtn.onclick = async () => {
-  if(!user)return alert("请连接钱包");
-  if(choice==0)return alert("请选择小或大");
-  const amt = ethers.parseEther(amount.value);
-  const tk = TOKEN_ADDR[token.value];
-  const val = token.value=="BNB" ? amt : 0;
-  await contract.bet(choice, tk, amt, inviteCode.value, {value: val});
-  alert("投注成功！请等待2个区块后开奖");
+  if (!user) return alert("请连接钱包");
+  if (choice === 0) return alert("请选择 小/大");
+  try {
+    const amt = ethers.parseEther(amount.value);
+    const token = token.value;
+    const tokenAddr = TOKEN_ADDR[token];
+    const value = token === "BNB" ? amt : 0;
+    const code = inviteCode.value || "";
+
+    const tx = await contract.bet(choice, tokenAddr, amt, code, { value });
+    await tx.wait();
+    alert("投注成功！等待2个区块后开奖");
+  } catch (e) {
+    alert("投注失败：" + e.message);
+  }
 };
 </script>
 </body>
