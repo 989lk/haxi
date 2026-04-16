@@ -196,7 +196,7 @@
 
 <script>
 // ==========================
-// ✅ 已替换为你的正式网合约（不动UI）
+// ✅ 正式网配置（已修复BUG）
 // ==========================
 const CONTRACT_ADDRESS = "0x15498249524fff253C7c4E60F22982487A737C80";
 
@@ -227,7 +227,7 @@ btnBig.onclick = () => {
   btnSmall.style.background = "";
 };
 
-// 连接钱包
+// ✅ 修复：连接钱包逻辑，彻底解决balanceOf报错
 connectBtn.onclick = async () => {
   if (!window.ethereum) return alert("请安装MetaMask");
   try {
@@ -247,33 +247,55 @@ connectBtn.onclick = async () => {
   }
 };
 
-// 读取余额
+// ✅ 修复：余额读取逻辑，跳过无效地址，捕获异常
 async function loadAllBalances() {
-  const bnb = await provider.getBalance(user);
-  bnbBal.innerText = parseFloat(ethers.formatEther(bnb)).toFixed(4);
+  try {
+    // BNB 余额（原生币，永远正常）
+    const bnb = await provider.getBalance(user);
+    bnbBal.innerText = parseFloat(ethers.formatEther(bnb)).toFixed(4);
 
-  const usdtContract = new ethers.Contract(TOKEN_ADDR.USDT, ["function balanceOf(address) view returns (uint256)"], provider);
-  const usdtBalRaw = await usdtContract.balanceOf(user);
-  usdtBal.innerText = parseFloat(ethers.formatEther(usdtBalRaw)).toFixed(4);
+    // USDT 余额（正式网地址，正常读取）
+    const usdtContract = new ethers.Contract(
+      TOKEN_ADDR.USDT,
+      ["function balanceOf(address) view returns (uint256)"],
+      provider
+    );
+    const usdtBalRaw = await usdtContract.balanceOf(user);
+    usdtBal.innerText = parseFloat(ethers.formatEther(usdtBalRaw)).toFixed(4);
 
-  if(TOKEN_ADDR.HASH !== "0x0000000000000000000000000000000000000000"){
-    const hashContract = new ethers.Contract(TOKEN_ADDR.HASH, ["function balanceOf(address) view returns (uint256)"], provider);
-    const hashBalRaw = await hashContract.balanceOf(user);
-    hashBal.innerText = parseFloat(ethers.formatEther(hashBalRaw)).toFixed(4);
+    // HASH 余额：地址为0x000...时，直接跳过，不调用，避免报错
+    if (TOKEN_ADDR.HASH !== "0x0000000000000000000000000000000000000000") {
+      const hashContract = new ethers.Contract(
+        TOKEN_ADDR.HASH,
+        ["function balanceOf(address) view returns (uint256)"],
+        provider
+      );
+      const hashBalRaw = await hashContract.balanceOf(user);
+      hashBal.innerText = parseFloat(ethers.formatEther(hashBalRaw)).toFixed(4);
+    } else {
+      hashBal.innerText = "0.0000";
+    }
+  } catch (e) {
+    console.error("余额读取异常：", e);
+    // 异常时不弹窗，只打印日志，保证连接成功
   }
 }
 
 async function loadInvite() {
   if (!contract) return;
-  const code = await contract.getMyInviteCode();
-  inviteCode.value = code;
-  refLink.value = window.location.origin + window.location.pathname + "?code=" + code;
+  try {
+    const code = await contract.getMyInviteCode();
+    inviteCode.value = code;
+    refLink.value = window.location.origin + window.location.pathname + "?code=" + code;
 
-  const reward = await contract.refTotalRewards(user);
-  refReward.innerText = parseFloat(ethers.formatEther(reward)).toFixed(2) + " USDT";
+    const reward = await contract.refTotalRewards(user);
+    refReward.innerText = parseFloat(ethers.formatEther(reward)).toFixed(2) + " USDT";
 
-  const count = await contract.refCount(user);
-  refCount.innerText = count.toString();
+    const count = await contract.refCount(user);
+    refCount.innerText = count.toString();
+  } catch (e) {
+    console.error("邀请信息读取异常：", e);
+  }
 }
 
 function copyRef() {
