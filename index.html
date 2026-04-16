@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HashDice - 哈希猜大小</title>
+<title>终局 · HASH</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -143,8 +143,8 @@ body {
 <body class="p-4 max-w-4xl mx-auto pb-24">
 
 <div class="flex items-center justify-between mb-4">
-  <div class="text-xl font-bold text-cyan-300">HashDice</div>
-  <button class="px-4 py-2 btn-primary text-sm">哈希猜大小</button>
+  <div class="text-xl font-bold text-cyan-300">终局</div>
+  <button class="px-4 py-2 btn-primary text-sm">HASH 竞猜</button>
 </div>
 
 <div class="grid grid-cols-3 gap-3 mb-5">
@@ -152,7 +152,7 @@ body {
     <div class="text-xs text-gray-400">在线</div><div class="text-sm font-semibold text-cyan-300">1289</div>
   </div>
   <div class="stat-box p-3 text-center">
-    <div class="text-xs text-gray-400">总开奖</div><div class="text-sm font-semibold text-cyan-300">18.6万</div>
+    <div class="text-xs text-gray-400">纪元</div><div class="text-sm font-semibold text-cyan-300">18.6万</div>
   </div>
 </div>
 
@@ -174,7 +174,7 @@ body {
 </div>
 
 <div class="card card-glow p-6 mb-6">
-  <h3 class="text-lg font-bold mb-4 text-cyan-300">🎲 哈希猜大小</h3>
+  <h3 class="text-lg font-bold mb-4 text-cyan-300">终局竞猜</h3>
   <div class="flex gap-2 mb-3">
     <button class="btn-quick flex-1" onclick="setBet(0.01)">0.01</button>
     <button class="btn-quick flex-1" onclick="setBet(0.1)">0.1</button>
@@ -186,42 +186,64 @@ body {
   <select id="token" class="input-custom w-full p-4 mb-4">
     <option>BNB</option><option>USDT</option><option>HASH</option>
   </select>
-  <div>开奖哈希：</div>
-  <div class="hash-box" id="hashResult">等待开奖...</div>
+  <div>结算哈希：</div>
+  <div class="hash-box" id="hashResult">等待结算...</div>
   <div id="flashBox" class="text-center my-4 p-3 rounded-xl">
-    <div class="text-sm text-gray-400">开奖数字</div>
+    <div class="text-sm text-gray-400">结算数字</div>
     <div id="numResult" class="text-4xl font-bold text-cyan-300">-</div>
   </div>
   <div class="flex gap-3 mb-4">
-    <button id="btnSmall" class="flex-1 py-3 btn-option">小 (0-4)</button>
-    <button id="btnBig" class="flex-1 py-3 btn-option">大 (5-9)</button>
+    <button id="btnSmall" class="flex-1 py-3 btn-option">小</button>
+    <button id="btnBig" class="flex-1 py-3 btn-option">大</button>
   </div>
-  <button id="btnPlay" class="w-full py-4 btn-success text-lg">确认下注</button>
+  <button id="btnPlay" class="w-full py-4 btn-success text-lg">确认投入</button>
 </div>
 
 <div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-cyan-300">📊 最近走势</h4>
+  <h4 class="font-semibold mb-3 text-cyan-300">纪元走势</h4>
   <div id="trend" class="flex gap-1 flex-wrap"></div>
 </div>
 
 <div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-cyan-300">📜 开奖记录</h4>
+  <h4 class="font-semibold mb-3 text-cyan-300">结算记录</h4>
   <div id="historyList"></div>
 </div>
 
 <div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3 text-cyan-300">📈 我的战绩</h4>
+  <h4 class="font-semibold mb-3 text-cyan-300">战绩统计</h4>
   <div class="grid grid-cols-3 gap-2 text-center text-sm">
-    <div><div class="text-gray-400">赢</div><div id="winCount" class="text-green-400">0</div></div>
-    <div><div class="text-gray-400">输</div><div id="loseCount" class="text-red-400">0</div></div>
+    <div><div class="text-gray-400">胜</div><div id="winCount" class="text-green-400">0</div></div>
+    <div><div class="text-gray-400">负</div><div id="loseCount" class="text-red-400">0</div></div>
     <div><div class="text-gray-400">总</div><div id="totalCount" class="text-cyan-300">0</div></div>
   </div>
 </div>
 
+<!-- 邀请 + 奖励收入 -->
 <div class="card p-5">
-  <h4 class="font-semibold mb-2 text-cyan-300">我的邀请</h4>
-  <input id="refLink" readonly class="input-custom w-full p-3 text-sm mb-2">
-  <button onclick="copyRefLink()" class="w-full py-2 btn-option">复制邀请链接</button>
+  <h4 class="font-semibold mb-3 text-cyan-300">邀请奖励</h4>
+  
+  <div class="grid grid-cols-2 gap-3 mb-3">
+    <div class="stat-box p-3 text-center">
+      <div class="text-xs text-gray-400">邀请总收入</div>
+      <div id="refReward" class="text-sm font-semibold text-yellow-400">0.0000 USDT</div>
+    </div>
+    <div class="stat-box p-3 text-center">
+      <div class="text-xs text-gray-400">邀请人数</div>
+      <div id="refCount" class="text-sm font-semibold text-cyan-300">0</div>
+    </div>
+  </div>
+
+  <div class="mb-2">
+    <div class="text-sm text-gray-400">我的邀请码</div>
+    <input id="inviteCode" readonly class="input-custom w-full p-3 text-sm mt-1" value="未连接钱包">
+  </div>
+
+  <div class="mb-1">
+    <div class="text-sm text-gray-400">邀请链接</div>
+    <input id="refLink" readonly class="input-custom w-full p-3 text-sm mt-1">
+  </div>
+
+  <button onclick="copyRefLink()" class="w-full py-2 btn-option mt-2">复制邀请信息</button>
 </div>
 
 <script>
@@ -231,8 +253,35 @@ let playing = false;
 let history = [];
 let win = 0, lose = 0, total = 0;
 
+// 邀请奖励模拟数据
+let refReward = 0;
+let refCount = 0;
+
 const USDT_ADDRESS = "0x55d398c26d7bd02285b074434aa690b7130832e";
 const HASH_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+// 钱包地址生成固定唯一邀请码
+function getInviteCodeByAddress(address) {
+  if (!address) return "未连接";
+  let addr = address.toLowerCase().replace("0x", "");
+  let code = "";
+  let chars = "ABCDEFGHJKLMNPQRSTWXYZ23456789";
+  for (let i = 0; i < 8; i++) {
+    let idx = parseInt(addr.substr(i * 2, 2), 16) % chars.length;
+    code += chars[idx];
+  }
+  return code;
+}
+
+// 加载邀请信息
+function loadInviteInfo() {
+  if (!user) return;
+  let code = getInviteCodeByAddress(user);
+  document.getElementById("inviteCode").value = code;
+  document.getElementById("refLink").value = location.origin + location.pathname + "?code=" + code;
+  document.getElementById("refReward").innerText = refReward.toFixed(4) + " USDT";
+  document.getElementById("refCount").innerText = refCount;
+}
 
 async function connectWallet() {
   if (!window.ethereum) return alert("请安装MetaMask");
@@ -244,6 +293,7 @@ async function connectWallet() {
     document.getElementById("addr").innerText = user.slice(0,6)+"..."+user.slice(-4);
     document.getElementById("connectBtn").innerText = "已连接";
     loadBalances();
+    loadInviteInfo();
   } catch (e) { alert("连接失败"); }
 }
 
@@ -306,22 +356,31 @@ function addHistory(num, bet, isWin, amount) {
 function renderHistory() {
   let h = "";
   history.forEach(item=>{
-    h+=`<div class="history-item"><div>${item.time} | ${item.num} ${item.type}</div><div style="color:${item.isWin?'#10b981':'#ef4444'}">${item.isWin?"赢":"输"}</div></div>`;
+    h+=`<div class="history-item"><div>${item.time} | ${item.num} ${item.type}</div><div style="color:${item.isWin?'#10b981':'#ef4444'}">${item.isWin?"胜":"负"}</div></div>`;
   });
   historyList.innerHTML = h;
 }
 
 function copyRefLink() {
-  refLink.value = location.href;
-  navigator.clipboard.writeText(refLink.value).then(()=>alert("复制成功"));
+  let code = document.getElementById("inviteCode").value;
+  let link = document.getElementById("refLink").value;
+  let text = `邀请码：${code}\n邀请链接：${link}`;
+  navigator.clipboard.writeText(text).then(()=>alert("复制成功"));
+}
+
+// 模拟邀请奖励
+function addRefReward(amount) {
+  refReward += amount;
+  refCount += 1;
+  loadInviteInfo();
 }
 
 btnPlay.onclick = async ()=>{
   if (!user) return alert("请连接钱包");
-  if (!betType) return alert("请选大/小");
+  if (!betType) return alert("请选择");
   if (playing) return;
   playing = true;
-  btnPlay.innerText = "开奖中...";
+  btnPlay.innerText = "结算中...";
   btnPlay.disabled = true;
 
   const { hash, num } = genHash();
@@ -331,9 +390,15 @@ btnPlay.onclick = async ()=>{
   setTimeout(()=>{
     const isWin = (betType=="small"&&num<=4)||(betType=="big"&&num>=5);
     addHistory(num,betType,isWin,amount.value);
-    alert(isWin?"🎉 恭喜中奖！":"😥 再接再厉");
+    
+    // 模拟下注产生邀请奖励
+    if (isWin) {
+      addRefReward(0.005);
+    }
+
+    alert(isWin?"🎉 终局胜出":"⚡ 终局结算");
     playing = false;
-    btnPlay.innerText = "确认下注";
+    btnPlay.innerText = "确认投入";
     btnPlay.disabled = false;
     loadBalances();
   },1000);
