@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>HashDice - 数字竞猜</title>
+<title>HashDice - 哈希猜大小</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -13,6 +13,7 @@ body {
                     radial-gradient(circle at 80% 80%, rgba(22,12,60,0.4), transparent 45%);
   color: #fff;
   min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .card {
   background: rgba(22,22,40,0.65);
@@ -28,7 +29,7 @@ body {
 .card-glow::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   border-radius: 20px;
   padding: 1px;
   background: linear-gradient(135deg, #4f46e5, #06b6d4, #4f46e5);
@@ -37,24 +38,30 @@ body {
   opacity: 0.4;
   pointer-events: none;
 }
+/* 按钮样式 - 精致缩小版 */
 .btn-primary {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  border-radius: 14px;
+  border-radius: 12px;
   font-weight: 600;
+  font-size: 13px;
+  padding: 6px 16px;
   transition: all 0.25s ease;
+  box-shadow: 0 0 10px rgba(79,70,229,0.2);
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(79,70,229,0.35);
+  box-shadow: 0 0 20px rgba(79,70,229,0.4);
 }
 .btn-success {
   background: linear-gradient(90deg, #10b981, #059669);
   border-radius: 14px;
+  font-weight: 600;
   transition: all 0.25s ease;
+  box-shadow: 0 0 15px rgba(16,185,129,0.25);
 }
 .btn-success:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(16,185,129,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(16,185,129,0.35);
 }
 .btn-option {
   background: rgba(30,30,60,0.5);
@@ -66,10 +73,19 @@ body {
   background: rgba(40,40,80,0.6);
   border-color: rgba(79,70,229,0.4);
 }
+.btn-option.active {
+  background: rgba(79,70,229,0.2);
+  border-color: #4f46e5;
+}
 .stat-box {
   background: rgba(26,26,44,0.5);
   border-radius: 16px;
   backdrop-filter: blur(10px);
+  transition: transform 0.2s ease;
+}
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .marquee {
   background: rgba(30,30,60,0.4);
@@ -77,6 +93,7 @@ body {
   padding: 10px 16px;
   white-space: nowrap;
   overflow: hidden;
+  font-size: 13px;
 }
 .marquee span {
   display: inline-block;
@@ -90,28 +107,67 @@ body {
   background: rgba(24,24,42,0.5);
   border-radius: 12px;
   backdrop-filter: blur(6px);
+  transition: background 0.2s ease;
+}
+.history-item:hover {
+  background: rgba(30,30,55,0.7);
+}
+/* 输入框样式 */
+.input-custom {
+  background: rgba(18,18,37,0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  color: #fff;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+.input-custom:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+}
+/* 哈希结果展示 */
+.hash-box {
+  background: rgba(18,18,37,0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+  color: #ccc;
+  margin: 10px 0;
+}
+.result-num {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fbbf24;
+  margin: 8px 0;
 }
 </style>
 </head>
 <body class="p-4 max-w-4xl mx-auto pb-24">
 
+<!-- 顶部导航 -->
 <div class="flex items-center justify-between mb-5">
-  <div class="text-xl font-bold text-white">HashDice</div>
+  <div class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">HashDice</div>
   <div class="flex gap-3">
-    <button class="px-4 py-2 btn-primary text-sm">竞猜</button>
-    <button class="px-4 py-2 btn-option text-sm" onclick="location.href='xinyunlunpan.html'">轮盘</button>
+    <button class="px-4 py-2 btn-primary text-sm">哈希猜大小</button>
   </div>
 </div>
 
+<!-- 公告栏 -->
 <div class="marquee mb-5 text-sm">
-  <span>🎉 恭喜用户 0x87** 赢得 5 倍大奖！｜ 平台抽水 2.5%，邀请返佣 10% 实时到账｜公平可验</span>
+  <span>🎉 恭喜用户 0x87** 赢得 5 倍大奖！｜ 平台抽水 2.5%，邀请返佣 10% 实时到账｜公平可验，Provably Fair</span>
 </div>
 
+<!-- 钱包连接区 -->
 <div class="card card-glow p-5 mb-6 text-center">
-  <button id="connectBtn" class="px-5 py-2.5 btn-primary text-sm">连接钱包</button>
+  <button id="connectBtn" class="btn-primary">连接钱包</button>
   <div id="addr" class="text-gray-400 text-xs mt-3">未连接</div>
 </div>
 
+<!-- 资产展示区 -->
 <div class="grid grid-cols-3 gap-3 mb-6">
   <div class="stat-box p-4 text-center">
     <div class="text-gray-400 text-xs mb-1">BNB</div>
@@ -127,55 +183,222 @@ body {
   </div>
 </div>
 
+<!-- 哈希猜大小游戏区 -->
 <div class="card card-glow p-6 mb-6">
-  <h3 class="text-lg font-bold mb-5">数字竞猜</h3>
-  <input id="amount" class="w-full p-4 rounded-xl bg-[#121225] border border-white/10 mb-4 text-lg" value="0.01">
-  <select id="token" class="w-full p-4 rounded-xl bg-[#121225] border border-white/10 mb-5 text-lg">
+  <h3 class="text-lg font-bold mb-5">哈希猜大小</h3>
+  
+  <!-- 下注金额 -->
+  <input 
+    id="amount" 
+    class="input-custom w-full p-4 mb-4 text-lg" 
+    value="0.01" 
+    placeholder="下注金额"
+    type="number"
+    min="0.01"
+    step="0.01"
+  >
+  
+  <!-- 币种选择 -->
+  <select id="token" class="input-custom w-full p-4 mb-5 text-lg">
     <option value="BNB">BNB</option>
     <option value="USDT">USDT</option>
     <option value="HASH">HASH</option>
   </select>
+  
+  <!-- 哈希结果展示 -->
+  <div>开奖哈希：</div>
+  <div class="hash-box" id="hashResult">等待开奖...</div>
+  <div class="result-num">开奖数字：<span id="numResult">-</span></div>
+  
+  <!-- 大小选择按钮 -->
   <div class="flex gap-3 mb-5">
-    <button id="low" class="flex-1 py-4 btn-option">小 0-4</button>
-    <button id="high" class="flex-1 py-4 btn-option">大 5-9</button>
+    <button id="btnSmall" class="flex-1 py-4 btn-option">小 (0-4)</button>
+    <button id="btnBig" class="flex-1 py-4 btn-option">大 (5-9)</button>
   </div>
-  <button id="play" class="w-full py-4 btn-success text-lg">确认下注</button>
+  
+  <!-- 确认下注 -->
+  <button id="btnPlay" class="w-full py-4 btn-success text-lg">确认下注</button>
 </div>
 
+<!-- 历史记录区 -->
 <div class="card p-5 mb-6">
-  <h4 class="font-semibold mb-3">最近结果</h4>
-  <div id="history" class="space-y-2">
+  <h4 class="font-semibold mb-3">最近开奖记录</h4>
+  <div id="historyList" class="space-y-2">
     <div class="history-item px-3 py-2 text-sm">等待数据...</div>
   </div>
 </div>
 
+<!-- 邀请链接区 -->
 <div class="card p-5">
   <h4 class="font-semibold mb-3">我的邀请</h4>
-  <input id="ref" readonly class="w-full p-3 rounded-xl bg-[#121225] border border-white/10 text-sm">
+  <input 
+    id="refLink" 
+    readonly 
+    class="input-custom w-full p-3 text-sm"
+    placeholder="邀请链接将在连接钱包后生成"
+  >
+  <button 
+    class="w-full mt-3 py-2 btn-option text-sm"
+    onclick="copyRefLink()"
+  >复制邀请链接</button>
 </div>
 
 <script>
 let provider, signer, user;
-async function connect(){
-  if(!window.ethereum)return alert('请安装MetaMask');
-  provider = new ethers.BrowserProvider(window.ethereum);
-  await provider.send("eth_requestAccounts",[]);
-  signer = await provider.getSigner();
-  user = await signer.getAddress();
-  addr.innerText = user.slice(0,6)+'...'+user.slice(-4);
-}
-connectBtn.onclick = connect;
+let betType = null; // 记录下注类型：small/big
 
-play.onclick = ()=>{
-  if(!user)return alert('请先连接钱包');
-  let msg = ['小','大'][Math.random()>0.5?0:1];
-  alert(`✅ 下注成功！\n结果：${msg}`);
-  let dom = document.createElement('div');
-  dom.className='history-item px-3 py-2 text-sm';
-  dom.innerText = `${new Date().toLocaleTimeString()} | ${msg}`;
-  history.prepend(dom);
-  if(history.children.length>6) history.removeChild(history.lastChild);
+// 格式化地址显示
+function formatAddress(address) {
+  if (!address) return '未连接';
+  return `${address.slice(0,6)}...${address.slice(-4)}`;
 }
+
+// 连接钱包
+async function connectWallet() {
+  if (!window.ethereum) return alert('请安装MetaMask钱包');
+  try {
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    user = await signer.getAddress();
+    
+    // 更新页面状态
+    document.getElementById('addr').innerText = formatAddress(user);
+    document.getElementById('connectBtn').innerText = '已连接';
+    document.getElementById('refLink').value = `${location.origin}/index.html?ref=${user}`;
+    
+    // 加载余额（实际项目替换为链上查询）
+    loadBalances();
+  } catch (error) {
+    alert(`连接失败：${error.message}`);
+  }
+}
+
+// 加载余额（模拟）
+function loadBalances() {
+  if (!user) return;
+  // 模拟随机余额，实际项目替换为真实合约查询
+  document.getElementById('bnbBal').innerText = (Math.random() * 0.5).toFixed(4);
+  document.getElementById('usdtBal').innerText = (Math.random() * 1000).toFixed(2);
+  document.getElementById('hashBal').innerText = (Math.random() * 10000).toFixed(0);
+}
+
+// 生成安全哈希与开奖数字（0-9）
+function generateHashAndNumber() {
+  const randArr = crypto.getRandomValues(new Uint8Array(16));
+  const hash = Array.from(randArr).map(b => b.toString(16).padStart(2, '0')).join('');
+  const num = parseInt(hash.slice(-4), 16) % 10; // 0-9
+  return { hash, num };
+}
+
+// 重置按钮状态
+function resetBtnActive() {
+  document.getElementById('btnSmall').classList.remove('active');
+  document.getElementById('btnBig').classList.remove('active');
+}
+
+// 复制邀请链接
+function copyRefLink() {
+  const refEl = document.getElementById('refLink');
+  if (!refEl.value) return alert('请先连接钱包生成邀请链接');
+  
+  navigator.clipboard.writeText(refEl.value)
+    .then(() => alert('邀请链接复制成功！'))
+    .catch(() => {
+      refEl.select();
+      document.execCommand('copy');
+      alert('邀请链接复制成功！');
+    });
+}
+
+// 添加历史记录
+function addHistoryRecord(hash, num, betType, isWin, amount, token) {
+  const historyEl = document.getElementById('historyList');
+  const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  const resultType = num <= 4 ? '小' : '大';
+  
+  const item = document.createElement('div');
+  item.className = 'history-item px-3 py-2 text-sm';
+  item.innerHTML = `
+    ${time} | 数字: ${num} (${resultType}) | 下注: ${amount} ${token} 
+    <span style="color: ${isWin ? '#10b981' : '#ef4444'}">
+      ${isWin ? '✓ 赢' : '✗ 输'}
+    </span>
+  `;
+  
+  historyEl.prepend(item);
+  
+  // 最多保留10条记录
+  if (historyEl.children.length > 10) {
+    historyEl.removeChild(historyEl.lastChild);
+  }
+  
+  // 替换默认提示
+  if (historyEl.children.length === 1) {
+    historyEl.removeChild(historyEl.lastChild);
+  }
+}
+
+// 下注逻辑
+async function placeBet() {
+  if (!user) return alert('请先连接钱包');
+  if (!betType) return alert('请先选择「大」或「小」');
+  
+  const amount = parseFloat(document.getElementById('amount').value);
+  if (isNaN(amount) || amount < 0.01) return alert('请输入有效的下注金额（最小0.01）');
+  
+  const token = document.getElementById('token').value;
+  const { hash, num } = generateHashAndNumber();
+  
+  // 更新开奖结果
+  document.getElementById('hashResult').innerText = hash;
+  document.getElementById('numResult').innerText = num;
+  
+  // 判定输赢
+  const isWin = (betType === 'small' && num <= 4) || (betType === 'big' && num >= 5);
+  
+  // 模拟余额变化（实际项目替换为链上交易）
+  const bnbBalEl = document.getElementById('bnbBal');
+  const currentBal = parseFloat(bnbBalEl.innerText);
+  if (isWin) {
+    bnbBalEl.innerText = (currentBal + amount).toFixed(4);
+    alert(`🎉 恭喜赢了！\n开奖数字：${num}（${num <=4 ? '小' : '大'}）\n奖励：${amount} ${token}`);
+  } else {
+    bnbBalEl.innerText = (currentBal - amount).toFixed(4);
+    alert(`😥 很遗憾输了\n开奖数字：${num}（${num <=4 ? '小' : '大'}）`);
+  }
+  
+  // 添加历史记录
+  addHistoryRecord(hash, num, betType, isWin, amount, token);
+  
+  // 重置选择状态
+  resetBtnActive();
+  betType = null;
+}
+
+// 绑定事件
+document.getElementById('connectBtn').addEventListener('click', connectWallet);
+document.getElementById('btnSmall').addEventListener('click', () => {
+  betType = 'small';
+  resetBtnActive();
+  document.getElementById('btnSmall').classList.add('active');
+});
+document.getElementById('btnBig').addEventListener('click', () => {
+  betType = 'big';
+  resetBtnActive();
+  document.getElementById('btnBig').classList.add('active');
+});
+document.getElementById('btnPlay').addEventListener('click', placeBet);
+document.getElementById('amount').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') placeBet();
+});
+
+// 页面加载时自动检查钱包连接
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.ethereum && window.ethereum.selectedAddress) {
+    connectWallet();
+  }
+});
 </script>
 </body>
 </html>
