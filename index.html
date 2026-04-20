@@ -119,13 +119,13 @@
   </div>
 </div>
 
-<!-- 🔴 管理员控制台（默认隐藏，仅你的钱包可见） -->
+<!-- 🔴 管理员控制台 -->
 <div id="adminPanel" class="glass p-5 mb-5" style="display: none;">
   <h3 class="font-bold text-red-400 mb-3 flex items-center">
     🔴 合约管理员面板 <span class="admin-badge">OWNER</span>
   </h3>
 
-  <!-- 新增：本轮大小投注统计 -->
+  <!-- 本轮大小投注统计 -->
   <div class="grid grid-cols-3 gap-3 mb-4">
     <div class="p-3 rounded-xl bg-black/20 text-center">
       <div class="text-xs text-gray-400">本轮押小总金额</div>
@@ -155,6 +155,29 @@
       <div id="adminGameId" class="text-sm text-cyan-300">0</div>
     </div>
   </div>
+
+  <!-- ====================== 新增：添加/配置代币 ====================== -->
+  <div class="border border-red-500/20 rounded-xl p-4 mb-4">
+    <h4 class="text-sm font-semibold text-red-400 mb-3">⚙️ 代币配置（新增代币/修改限额）</h4>
+    <div class="space-y-2">
+      <input id="tokenAddr" class="input-box w-full" placeholder="代币合约地址（0x...）">
+      <div class="grid grid-cols-2 gap-2">
+        <input id="tokenMin" class="input-box" placeholder="最小投注（默认0.01）">
+        <input id="tokenMax" class="input-box" placeholder="最大投注（默认10）">
+      </div>
+      <div class="flex gap-2 items-center mt-1">
+        <input type="checkbox" id="tokenEnabled" checked>
+        <label class="text-sm" for="tokenEnabled">启用该代币</label>
+      </div>
+      <button onclick="adminUpdateToken()" class="btn-primary w-full mt-1">
+        保存代币配置（新增/更新）
+      </button>
+    </div>
+    <div class="text-xs text-gray-500 mt-2">
+      提示：添加新代币后，前端会自动识别并在投注区显示
+    </div>
+  </div>
+  <!-- ====================== 新增结束 ====================== -->
 
   <!-- 强制开奖 -->
   <div class="flex gap-2 mb-3">
@@ -257,7 +280,7 @@
 
 <script>
 // ==========================
-// 已填入你的真实配置
+// 你的配置
 // ==========================
 const CONTRACT_ADDRESS = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8";
 const TOKEN_ADDR = {
@@ -266,7 +289,6 @@ const TOKEN_ADDR = {
 };
 const ADMIN_WALLET = "0xda91173e42bbb07ba5916b21dae8ba590315aabc".toLowerCase();
 
-// 完整匹配合约ABI
 const ABI = [
   {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"BNB","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
@@ -317,7 +339,7 @@ let provider, signer, user, contract;
 let choice = 0;
 
 // ==========================
-// 基础游戏功能
+// 基础功能
 // ==========================
 function setAmt(v) { amount.value = v }
 function maxAmt() { amount.value = 10 }
@@ -326,7 +348,7 @@ btnSmall.onclick = () => { choice = 1; btnSmall.style.background = "rgba(0,140,2
 btnBig.onclick = () => { choice = 2; btnBig.style.background = "rgba(0,140,255,0.15)"; btnSmall.style.background = ""; };
 
 // ==========================
-// 管理员权限校验
+// 管理员权限
 // ==========================
 function checkAdminPermission(wallet) {
   const isAdmin = wallet.toLowerCase() === ADMIN_WALLET;
@@ -343,7 +365,7 @@ function checkAdminPermission(wallet) {
 // 连接钱包
 // ==========================
 connectBtn.onclick = async () => {
-  if (!window.ethereum) return alert("请安装MetaMask钱包");
+  if (!window.ethereum) return alert("请安装MetaMask");
   try {
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
@@ -355,13 +377,34 @@ connectBtn.onclick = async () => {
     connectBtn.innerText = "已连接";
     await loadAllBalances();
     await loadInvite();
+    await refreshTokenList();
   } catch (e) {
     alert("连接失败：" + e.message);
   }
 };
 
 // ==========================
-// 加载资产余额
+// 刷新代币下拉框
+// ==========================
+async function refreshTokenList() {
+  if (!contract) return;
+  try {
+    let list = await contract.getTokenList();
+    let sel = document.getElementById("tokenSelect");
+    sel.innerHTML = "";
+    for (let addr of list) {
+      let opt = document.createElement("option");
+      opt.value = addr;
+      opt.innerText = addr === TOKEN_ADDR.BNB ? "BNB" :
+                      addr.toLowerCase() === TOKEN_ADDR.USDT.toLowerCase() ? "USDT" :
+                      "TOKEN:" + addr.slice(0,6)+"..."+addr.slice(-4);
+      sel.appendChild(opt);
+    }
+  } catch (e) {}
+}
+
+// ==========================
+// 余额 & 邀请
 // ==========================
 async function loadAllBalances() {
   try {
@@ -370,12 +413,9 @@ async function loadAllBalances() {
     const usdtContract = new ethers.Contract(TOKEN_ADDR.USDT, ["function balanceOf(address) view returns (uint256)"], provider);
     const usdt = await usdtContract.balanceOf(user);
     usdtBal.innerText = parseFloat(ethers.formatEther(usdt)).toFixed(4);
-  } catch (e) { console.error(e); }
+  } catch (e) {}
 }
 
-// ==========================
-// 邀请功能
-// ==========================
 async function loadInvite() {
   if (!contract) return;
   try {
@@ -384,96 +424,124 @@ async function loadInvite() {
     const reward = await contract.refTotalRewards(user);
     refReward.innerText = parseFloat(ethers.formatEther(reward)).toFixed(2) + " USDT";
     refCount.innerText = (await contract.refCount(user)).toString();
-  } catch (e) { console.error(e); }
+  } catch (e) {}
 }
 
 function copyRef() {
-  navigator.clipboard.writeText(`邀请码：${inviteCode.value}`).then(() => alert("复制成功"));
+  navigator.clipboard.writeText("邀请码："+inviteCode.value).then(()=>alert("复制成功"));
 }
 
 // ==========================
 // USDT授权
 // ==========================
-async function approveUSDT(amount) {
-  const usdtContract = new ethers.Contract(TOKEN_ADDR.USDT, [
+async function approveUSDT(amt) {
+  const c = new ethers.Contract(TOKEN_ADDR.USDT, [
     "function approve(address spender, uint256 amount) external returns (bool)"
   ], signer);
-  const tx = await usdtContract.approve(CONTRACT_ADDRESS, amount);
+  let tx = await c.approve(CONTRACT_ADDRESS, amt);
   await tx.wait();
 }
 
 // ==========================
-// 投注功能
+// 投注
 // ==========================
 betBtn.onclick = async () => {
   if (!user) return alert("请连接钱包");
-  if (choice === 0) return alert("请选择 小/大");
+  if (choice === 0) return alert("请选小/大");
   try {
-    const amt = ethers.parseEther(amount.value);
-    const token = TOKEN_ADDR[tokenSelect.value];
-    const value = tokenSelect.value === "BNB" ? amt : 0;
-    const refCode = new URLSearchParams(window.location.search).get("code") || "";
+    let amt = ethers.parseEther(amount.value);
+    let token = document.getElementById("tokenSelect").value;
+    let val = token === TOKEN_ADDR.BNB ? amt : 0;
+    let ref = new URLSearchParams(location.search).get("code")||"";
 
-    if(token === TOKEN_ADDR.USDT) await approveUSDT(amt);
+    if (token !== TOKEN_ADDR.BNB) {
+      let ac = new ethers.Contract(token, [
+        "function allowance(address,address)view returns(uint256)"
+      ], provider);
+      let allow = await ac.allowance(user, CONTRACT_ADDRESS);
+      if (allow < amt) await approveUSDT(amt);
+    }
 
-    const tx = await contract.bet(choice, token, amt, refCode, { value });
+    let tx = await contract.bet(choice, token, amt, ref, {value:val});
     await tx.wait();
-    alert("投注成功！等待2个区块后开奖");
-    
-    if(contract) adminLoadInfo();
+    alert("投注成功！等待2区块开奖");
+    adminLoadInfo();
   } catch (e) {
-    alert("投注失败：" + e.message);
+    alert("失败："+e.message);
   }
 };
 
 // ==========================
-// 管理员功能
+// 管理员加载
 // ==========================
 async function adminLoadInfo() {
-  const owner = await contract.owner();
-  const gameId = await contract.gameId();
+  let owner = await contract.owner();
+  let gid = await contract.gameId();
   document.getElementById("adminOwner").innerText = owner;
-  document.getElementById("adminGameId").innerText = gameId.toString();
+  document.getElementById("adminGameId").innerText = gid.toString();
 
-  // 加载大小投注统计
-  const totalSmall = await contract.totalSmall();
-  const totalBig = await contract.totalBig();
-  const betCount = await contract.betCount();
-
-  document.getElementById("statTotalSmall").innerText = parseFloat(ethers.formatEther(totalSmall)).toFixed(4);
-  document.getElementById("statTotalBig").innerText   = parseFloat(ethers.formatEther(totalBig)).toFixed(4);
-  document.getElementById("statBetCount").innerText   = betCount.toString();
+  let ts = await contract.totalSmall();
+  let tb = await contract.totalBig();
+  let bc = await contract.betCount();
+  document.getElementById("statTotalSmall").innerText = parseFloat(ethers.formatEther(ts)).toFixed(4);
+  document.getElementById("statTotalBig").innerText = parseFloat(ethers.formatEther(tb)).toFixed(4);
+  document.getElementById("statBetCount").innerText = bc.toString();
 }
 
+// ==========================
 // 强制开奖
+// ==========================
 async function adminReveal() {
-  const id = document.getElementById("revealId").value;
-  if (!id) return alert("请输入游戏ID");
+  let id = document.getElementById("revealId").value;
+  if (!id) return alert("输入游戏ID");
   try {
-    const tx = await contract.reveal(id); await tx.wait();
-    alert("强制开奖成功！"); adminLoadInfo();
-  } catch (e) { alert("失败：" + e.message); }
+    let tx = await contract.reveal(id); await tx.wait();
+    alert("开奖成功"); adminLoadInfo();
+  } catch(e) { alert("失败："+e.message) }
 }
 
-// 合约提现
+// ==========================
+// 提现
+// ==========================
 async function adminWithdraw() {
-  const token = TOKEN_ADDR[withdrawToken.value];
-  const amt = ethers.parseEther(withdrawAmt.value || "0");
+  let token = TOKEN_ADDR[document.getElementById("withdrawToken").value];
+  let amt = ethers.parseEther(document.getElementById("withdrawAmt").value||"0");
   try {
-    const tx = await contract.withdraw(token, amt); await tx.wait();
-    alert("提现成功！");
-  } catch (e) { alert("失败：" + e.message); }
+    let tx = await contract.withdraw(token, amt); await tx.wait();
+    alert("提现成功");
+  } catch(e) { alert("失败："+e.message) }
 }
 
-// 清空本轮大小统计
+// ==========================
+// 清空统计
+// ==========================
 async function adminResetStats() {
   try {
-    const tx = await contract.resetRoundStats();
+    let tx = await contract.resetRoundStats(); await tx.wait();
+    alert("已清空本轮统计"); adminLoadInfo();
+  } catch(e) { alert("失败："+e.message) }
+}
+
+// ==========================
+// 新增：更新/添加代币
+// ==========================
+async function adminUpdateToken() {
+  let addr = document.getElementById("tokenAddr").value.trim();
+  let minStr = document.getElementById("tokenMin").value.trim() || "0.01";
+  let maxStr = document.getElementById("tokenMax").value.trim() || "10";
+  let enabled = document.getElementById("tokenEnabled").checked;
+
+  if (!addr || !addr.startsWith("0x")) return alert("请输入正确代币地址");
+
+  try {
+    let min = ethers.parseEther(minStr);
+    let max = ethers.parseEther(maxStr);
+    let tx = await contract.updateTokenConfig(addr, min, max, enabled);
     await tx.wait();
-    alert("已清空本轮大小统计！");
-    adminLoadInfo();
+    alert("代币配置保存成功！");
+    await refreshTokenList();
   } catch (e) {
-    alert("清空失败：" + e.message);
+    alert("失败：" + e.message);
   }
 }
 </script>
